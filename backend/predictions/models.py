@@ -5,10 +5,11 @@ from ml_models.models import ModelType
 
 
 class RiskLevel(models.TextChoices):
-    # LOW = HEALTHY, MEDIUM = WARNING, HIGH = HIGH_RISK
+    # LOW = HEALTHY, MEDIUM = WARNING, HIGH and CRITICAL = HIGH_RISK
     LOW = "LOW", "Low"
     MEDIUM = "MEDIUM", "Medium"
     HIGH = "HIGH", "High"
+    CRITICAL = "CRITICAL", "Critical"
 
 
 class Prediction(models.Model):
