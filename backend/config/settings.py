@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "ml_models",
     "predictions",
     "monitoring",
+    "infrastructure",
 ]
 
 MIDDLEWARE = [
@@ -172,3 +173,5 @@ SPECTACULAR_SETTINGS = {
 }
 
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+
+AI_ARTIFACTS_DIR = Path(os.getenv("AI_ARTIFACTS_DIR", BASE_DIR.parent / "ai-service" / "models"))
