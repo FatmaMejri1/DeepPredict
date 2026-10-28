@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "predictions",
     "monitoring",
     "infrastructure",
+    "dashboard",
 ]
 
 MIDDLEWARE = [
@@ -174,4 +175,10 @@ SPECTACULAR_SETTINGS = {
 
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
 
-AI_ARTIFACTS_DIR = Path(os.getenv("AI_ARTIFACTS_DIR", BASE_DIR.parent / "ai-service" / "models"))
+AI_ARTIFACTS_DIR = Path(os.getenv("AI_ARTIFACTS_DIR", BASE_DIR.parent / "ai-service" / "models"))
+
+# web dashboard (Django templates): session login
+LOGIN_URL = "dashboard:login"
+LOGIN_REDIRECT_URL = "dashboard:summary"
+LOGOUT_REDIRECT_URL = "dashboard:login"
+
