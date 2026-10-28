@@ -1,0 +1,40 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Summary &middot; DeepPredict{% endblock %}
+{% block content %}
+<h1>Summary</h1>
+<p class="note">
+  Demo data: replayed Backblaze history{% if data_until %}, readings up to {{ data_until|date:"Y-m-d" }}{% endif %}.
+</p>
+
+<section class="cards">
+  <div class="card"><span class="label">Drives</span><span class="value">{{ total }}</span></div>
+  <a class="card status-healthy" href="{% url 'dashboard:resources' %}?status=HEALTHY"><span class="label">Healthy</span><span class="value">{{ healthy }}</span></a>
+  <a class="card status-warning" href="{% url 'dashboard:resources' %}?status=WARNING"><span class="label">Warning</span><span class="value">{{ warning }}</span></a>
+  <a class="card status-high_risk" href="{% url 'dashboard:resources' %}?status=HIGH_RISK"><span class="label">High risk</span><span class="value">{{ high_risk }}</span></a>
+  <div class="card"><span class="label">Anomalous</span><span class="value">{{ anomalous }}</span></div>
+  <div class="card"><span class="label">Not scored yet</span><span class="value">{{ not_scored }}</span></div>
+</section>
+
+<h2>Drives to look at first</h2>
+{% if top %}
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Drive</th><th>Status</th><th>Risk level</th><th class="hide-sm">Risk score</th><th>Anomaly</th><th class="hide-sm">Scored until</th></tr></thead>
+  <tbody>
+  {% for d in top %}
+    <tr>
+      <td><a href="{% url 'dashboard:resource_detail' d.pk %}">{{ d.identifier }}</a></td>
+      <td><span class="badge status-{{ d.status|lower }}">{{ d.get_status_display }}</span></td>
+      <td>{% include "dashboard/_risk_badge.html" with level=d.risk_level %}</td>
+      <td class="hide-sm">{{ d.risk_score|floatformat:2 }}</td>
+      <td>{% include "dashboard/_anomaly_badge.html" with anomalous=d.is_anomalous %}</td>
+      <td class="hide-sm">{{ d.scored_until|date:"Y-m-d" }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}
+<p class="note">No predictions yet. Run <code>python manage.py run_predictions</code>.</p>
+{% endif %}
+{% endblock %}

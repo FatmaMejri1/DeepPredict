@@ -1,0 +1,46 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Models &middot; DeepPredict{% endblock %}
+{% block content %}
+<h1>Models</h1>
+<p class="note">
+  Two separate models: one estimates the risk that a drive fails within 7 days, the other tells whether
+  a drive behaves unlike healthy drives. They are never merged into one score.
+</p>
+
+{% for c in cards %}
+<section class="panel">
+  <h2>{{ c.obj.name }} <span class="note">{{ c.obj.version }}</span>
+    {% if c.obj.is_active %}<span class="badge normal">active</span>{% else %}<span class="badge muted">inactive</span>{% endif %}
+  </h2>
+  <p class="note">
+    {{ c.obj.get_model_type_display }} &middot; {{ c.obj.architecture }} &middot; trained {{ c.obj.trained_at|date:"Y-m-d" }}<br>
+    Data: {{ c.obj.training_dataset }}
+  </p>
+  {% if c.rows %}
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Level</th><th>Score threshold</th><th>Healthy drives flagged</th><th>Failed drives detected</th></tr></thead>
+    <tbody>
+    {% for r in c.rows %}
+      <tr><td>{{ r.label }}</td><td>{{ r.threshold|floatformat:3 }}</td><td>{{ r.healthy|floatformat:1 }}%</td><td>{{ r.failed|floatformat:0 }}%</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="note">Evaluation: {{ c.protocol }}.</p>
+  {% endif %}
+</section>
+{% empty %}
+<p class="note">No model registered. Run <code>python manage.py register_models</code>.</p>
+{% endfor %}
+
+<section class="panel">
+  <h2>How to read the numbers</h2>
+  <ul>
+    <li>A level is a score that only a small share of healthy drives ever reach. &ldquo;Healthy drives flagged&rdquo; is that share, over about five months.</li>
+    <li>&ldquo;Failed drives detected&rdquo; counts only failed drives that had a valid 14-day window (189 of 274).</li>
+    <li>The risk score ranks drives, it is not a probability of failure.</li>
+    <li>The anomaly model never saw failures. It is a weak failure detector and is shown separately.</li>
+  </ul>
+</section>
+{% endblock %}
