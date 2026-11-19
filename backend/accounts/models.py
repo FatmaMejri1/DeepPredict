@@ -6,6 +6,7 @@ from django.db import models
 class Role(models.TextChoices):
     SYSADMIN = "SYSADMIN", "System Administrator"
     IT_PRO = "IT_PRO", "IT Professional"
+    OPERATOR = "OPERATOR", "Operator"
 
 
 class CustomUserManager(UserManager):

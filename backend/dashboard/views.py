@@ -1,15 +1,36 @@
 from urllib.parse import urlencode
 
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import F, Q
 from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
 
 from infrastructure.models import Status
 
 from . import queries
 
 PAGE_SIZE = 25
+
+
+class RoleBasedLoginView(auth_views.LoginView):
+    template_name = "dashboard/login.html"
+    redirect_authenticated_user = True
+
+    def get_success_url(self):
+        redirect_to = self.get_redirect_url()
+        if redirect_to:
+            return redirect_to
+        user = self.request.user
+        if user.is_authenticated and (
+            user.is_superuser
+            or user.is_staff
+            or getattr(user, "role", None) == "SYSADMIN"
+        ):
+            return reverse("admin:index")
+        return reverse("dashboard:summary")
+
 
 
 @login_required

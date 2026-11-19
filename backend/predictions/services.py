@@ -1,6 +1,8 @@
 from datetime import datetime, timezone as dt_timezone
 from django.db import transaction
 
+from audit.models import ActionType
+from audit.services import log_action
 from infrastructure.models import Resource, Status
 from ml_models.models import MLModelVersion, ModelType
 from monitoring.models import Metric
@@ -100,5 +102,19 @@ def predict_resource(resource: Resource, as_of=None):
             if resource.status != new_status:
                 resource.status = new_status
                 resource.save(update_fields=["status"])
+
+        log_action(
+            action=ActionType.PREDICT_RUN,
+            resource_type="Resource",
+            resource_id=str(resource.pk),
+            details={
+                "name": resource.name,
+                "identifier": resource.identifier,
+                "risk_score": answer["risk_score"],
+                "risk_level": risk_level,
+                "is_anomalous": answer["is_anomalous"],
+                "status": resource.status,
+            },
+        )
 
     return risk_pred, ano_pred

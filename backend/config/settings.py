@@ -20,6 +20,25 @@ load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 DEBUG = os.getenv("DJANGO_DEBUG", "False") == "True"
+# Security settings
+if DEBUG:
+    # Local development over HTTP
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    SECURE_HSTS_SECONDS = 0
+
+else:
+    # Production over HTTPS
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = int(
+        os.getenv("DJANGO_SECURE_HSTS_SECONDS", "31536000")
+    )
+CSRF_COOKIE_HTTPONLY = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
 
 
@@ -41,11 +60,13 @@ INSTALLED_APPS = [
     "monitoring",
     "infrastructure",
     "dashboard",
+    "audit",
 ]
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
+    'config.middleware.SecurityHeadersMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -59,7 +80,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -137,12 +158,26 @@ STATIC_URL = 'static/'
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
-
+# Email configuration
+if DEBUG:
+    MAILERS = {
+        "default": {
+            "BACKEND": "django.core.mail.backends.console.EmailBackend",
+        },
+    }
+else:
+    MAILERS = {
+        "default": {
+            "BACKEND": "django.core.mail.backends.smtp.EmailBackend",
+            "OPTIONS": {
+                "host": os.getenv("DJANGO_EMAIL_HOST", "localhost"),
+                "port": int(os.getenv("DJANGO_EMAIL_PORT", "25")),
+                "username": os.getenv("DJANGO_EMAIL_HOST_USER", ""),
+                "password": os.getenv("DJANGO_EMAIL_HOST_PASSWORD", ""),
+                "use_tls": os.getenv("DJANGO_EMAIL_USE_TLS", "False") == "True",
+            },
+        },
+    }
 AUTH_USER_MODEL = "accounts.User"
 
 REST_FRAMEWORK = {
@@ -181,4 +216,4 @@ AI_ARTIFACTS_DIR = Path(os.getenv("AI_ARTIFACTS_DIR", BASE_DIR.parent / "ai-serv
 LOGIN_URL = "dashboard:login"
 LOGIN_REDIRECT_URL = "dashboard:summary"
 LOGOUT_REDIRECT_URL = "dashboard:login"
-
+

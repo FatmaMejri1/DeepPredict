@@ -10,7 +10,6 @@ urlpatterns = [
     path("drives/", views.resource_list, name="resources"),
     path("drives/<uuid:pk>/", views.resource_detail, name="resource_detail"),
     path("models/", views.models_page, name="models"),
-    path("login/", auth_views.LoginView.as_view(
-        template_name="dashboard/login.html", redirect_authenticated_user=True), name="login"),
+    path("login/", views.RoleBasedLoginView.as_view(), name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
 ]
