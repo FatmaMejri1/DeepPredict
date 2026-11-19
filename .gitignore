@@ -27,3 +27,12 @@ data/
 # OS
 .DS_Store
 Thumbs.db
+
+# Additional virtual environments
+.venv312/
+
+# Coverage data
+.coverage
+
+# Runtime files
+*.pid

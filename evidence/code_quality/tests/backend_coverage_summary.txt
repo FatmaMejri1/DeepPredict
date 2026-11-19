@@ -1,0 +1,80 @@
+﻿Name                                                 Stmts   Miss  Cover   Missing
+----------------------------------------------------------------------------------
+accounts\__init__.py                                     0      0   100%
+accounts\admin.py                                       19      7    63%   14-16, 31-34
+accounts\apps.py                                         3      0   100%
+accounts\migrations\0001_initial.py                      9      0   100%
+accounts\migrations\0002_alter_user_managers.py          5      0   100%
+accounts\migrations\0003_alter_user_role.py              4      0   100%
+accounts\migrations\__init__.py                          0      0   100%
+accounts\models.py                                      22      0   100%
+accounts\permissions.py                                 30      0   100%
+accounts\serializers.py                                 85      4    95%   22, 76, 85-86
+accounts\test_permissions.py                            44      0   100%
+accounts\tests.py                                      138      0   100%
+accounts\urls.py                                         7      0   100%
+accounts\views.py                                       96      6    94%   83, 138-149
+audit\__init__.py                                        0      0   100%
+audit\admin.py                                          15      0   100%
+audit\apps.py                                            7      0   100%
+audit\migrations\0001_initial.py                         8      0   100%
+audit\migrations\__init__.py                             0      0   100%
+audit\models.py                                         39      3    92%   49-50, 57
+audit\services.py                                       33      6    82%   11, 14, 38, 63-65
+audit\signals.py                                        17      0   100%
+audit\tests.py                                          46      0   100%
+audit\views.py                                           1      1     0%   1
+dashboard\__init__.py                                    0      0   100%
+dashboard\apps.py                                        4      0   100%
+dashboard\queries.py                                    38      0   100%
+dashboard\run_e2e.py                                   150    150     0%   25-253
+dashboard\tests.py                                     119      0   100%
+dashboard\tests_e2e.py                                  85      0   100%
+dashboard\urls.py                                        5      0   100%
+dashboard\views.py                                      50      1    98%   24
+infrastructure\__init__.py                               0      0   100%
+infrastructure\admin.py                                 21      9    57%   15-19, 34-37
+infrastructure\apps.py                                   3      0   100%
+infrastructure\migrations\0001_initial.py                8      0   100%
+infrastructure\migrations\__init__.py                    0      0   100%
+infrastructure\models.py                                25      1    96%   38
+infrastructure\tests.py                                  1      0   100%
+infrastructure\views.py                                  1      1     0%   1
+ml_models\__init__.py                                    0      0   100%
+ml_models\admin.py                                       3      0   100%
+ml_models\apps.py                                        3      0   100%
+ml_models\management\__init__.py                         0      0   100%
+ml_models\management\commands\__init__.py                0      0   100%
+ml_models\management\commands\register_models.py        22     22     0%   1-64
+ml_models\migrations\0001_initial.py                     6      0   100%
+ml_models\migrations\__init__.py                         0      0   100%
+ml_models\models.py                                     23      1    96%   37
+ml_models\tests.py                                       1      0   100%
+ml_models\views.py                                       1      1     0%   1
+monitoring\__init__.py                                   0      0   100%
+monitoring\admin.py                                      3      0   100%
+monitoring\apps.py                                       3      0   100%
+monitoring\management\__init__.py                        0      0   100%
+monitoring\management\commands\__init__.py               0      0   100%
+monitoring\management\commands\load_demo_drives.py     105    105     0%   1-134
+monitoring\migrations\0001_initial.py                    6      0   100%
+monitoring\migrations\__init__.py                        0      0   100%
+monitoring\models.py                                    10      1    90%   23
+monitoring\tests.py                                      1      0   100%
+monitoring\views.py                                      1      1     0%   1
+predictions\__init__.py                                  0      0   100%
+predictions\admin.py                                     3      0   100%
+predictions\apps.py                                      3      0   100%
+predictions\inference_client.py                         32      0   100%
+predictions\management\__init__.py                       0      0   100%
+predictions\management\commands\__init__.py              0      0   100%
+predictions\management\commands\run_predictions.py      60     60     0%   1-80
+predictions\migrations\0001_initial.py                   6      0   100%
+predictions\migrations\__init__.py                       0      0   100%
+predictions\models.py                                   40      7    82%   38, 40, 43, 45, 48, 50, 57
+predictions\services.py                                 51      0   100%
+predictions\test_inference_client.py                    58      0   100%
+predictions\tests.py                                    71      0   100%
+predictions\views.py                                     1      1     0%   1
+----------------------------------------------------------------------------------
+TOTAL                                                 1651    388    76%

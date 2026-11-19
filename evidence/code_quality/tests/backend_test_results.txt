@@ -1,0 +1,105 @@
+============================= Test Execution Report: Backend Django =============================
+Component: DeepPredict Backend (Django 6.1.1 + DRF + PostgreSQL/SQLite)
+Test Runner: Django Test Runner / coverage.py (Python 3.14.6 / .venv)
+Timestamp: 2026-11-19T08:45:00
+Test Command: manage.py test accounts audit dashboard predictions infrastructure ml_models monitoring predictions.test_inference_client accounts.test_permissions
+
+SUMMARY:
+- Total Tests: 67
+- Passed: 67
+- Failed: 0
+- Errors: 0
+- Skipped: 0
+- Overall Result: SUCCESS (100% Passed)
+
+TEST BREAKDOWN BY MODULE:
+1. accounts (26 tests) - All PASSED
+   - test_cannot_change_own_role
+   - test_cannot_deactivate_self
+   - test_change_own_password
+   - test_change_password_wrong_old_password
+   - test_default_role_is_it_pro
+   - test_delete_is_not_allowed
+   - test_duplicate_email_ignoring_case
+   - test_filter_users_by_role
+   - test_inactive_user_cannot_login
+   - test_it_pro_cannot_create_users
+   - test_it_pro_cannot_list_users
+   - test_login_with_email
+   - test_login_with_username
+   - test_login_wrong_password
+   - test_me_requires_authentication
+   - test_me_with_real_token
+   - test_operator_user_creation_and_restrictions
+   - test_refresh_token
+   - test_superuser_gets_sysadmin_role
+   - test_sysadmin_can_create_operator
+   - test_sysadmin_can_list_users
+   - test_sysadmin_changes_role_of_another_user
+   - test_sysadmin_creates_user
+   - test_sysadmin_deactivates_another_user
+   - test_sysadmin_sets_password_of_another_user
+   - test_weak_password_rejected
+
+2. accounts.test_permissions (4 tests) - All PASSED
+   - test_is_sysadmin
+   - test_is_sysadmin_or_read_only
+   - test_is_it_pro_or_sysadmin
+   - test_is_operator_read_only
+
+3. audit (5 tests) - All PASSED
+   - test_log_action_creates_entry
+   - test_audit_log_is_immutable_cannot_update
+   - test_audit_log_is_immutable_cannot_delete
+   - test_login_success_signal_creates_audit_log
+   - test_login_failed_signal_creates_audit_log
+
+4. dashboard (13 tests) - All PASSED
+   - test_pages_require_login
+   - test_login_and_logout
+   - test_admin_login_redirects_to_admin_dashboard
+   - test_admin_dashboard_has_go_to_app_button
+   - test_app_sidebar_shows_admin_link_for_admin
+   - test_wrong_password_shows_error
+   - test_summary_counts
+   - test_list_filter_search_and_sort
+   - test_detail_has_chart_data
+   - test_detail_of_unscored_drive
+   - test_unknown_drive_is_404
+   - test_latest_prediction_wins
+   - test_models_page
+
+5. dashboard.tests_e2e (3 tests) - All PASSED
+   - test_full_it_pro_user_journey
+   - test_operator_read_only_ui
+   - test_sysadmin_has_admin_navigation
+
+6. predictions (8 tests) - All PASSED
+   - test_level_to_status_mapping
+   - test_not_enough_history_saves_nothing
+   - test_saves_two_predictions_and_updates_status
+   - test_up_to_date_drive_is_skipped
+   - test_as_of_only_sends_readings_up_to_that_day
+   - test_wrong_model_version_is_rejected
+   - test_no_active_model
+   - test_drive_without_readings
+
+7. predictions.test_inference_client (5 tests) - All PASSED
+   - test_predict_success
+   - test_predict_insufficient_history
+   - test_predict_validation_error
+   - test_predict_connection_error
+   - test_validate_service_url
+
+8. infrastructure, ml_models, monitoring (3 sanity tests) - All PASSED
+   - infrastructure.tests
+   - ml_models.tests
+   - monitoring.tests
+
+CODE COVERAGE:
+- Total Statements: 1,651
+- Covered Statements: 1,263
+- Missed Statements: 388
+- Statement Coverage: 76.5% (reported 77%)
+- XML Report: evidence/code_quality/tests/backend_coverage.xml
+- Text Report: evidence/code_quality/tests/backend_coverage_summary.txt

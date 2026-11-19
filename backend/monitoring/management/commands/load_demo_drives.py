@@ -70,7 +70,8 @@ class Command(BaseCommand):
             for row in reader:
                 serials.add(row[i_serial])
 
-        rng = random.Random(options["seed"])
+        # Non-cryptographic PRNG used strictly for deterministic sampling of demo drive telemetry dataset
+        rng = random.Random(options["seed"])  # nosec B311
         failed_all = sorted(s for s in serials if s in failed_on)
         healthy_all = sorted(s for s in serials if s not in failed_on)
         chosen_failed = rng.sample(failed_all, min(options["failed"], len(failed_all)))
