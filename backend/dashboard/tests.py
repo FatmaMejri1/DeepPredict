@@ -1,4 +1,5 @@
 import json
+import secrets
 from datetime import datetime, timedelta, timezone as dt_timezone
 
 from django.contrib.auth import get_user_model
@@ -17,10 +18,19 @@ def day(n):
     return datetime(2026, 6, 1, tzinfo=dt_timezone.utc) + timedelta(days=n)
 
 
+def _generate_test_credential(prefix="UserAuth#"):
+    return f"{prefix}{secrets.token_urlsafe(16)}"
+
+
+USER_CREDENTIAL = _generate_test_credential("UserAuth#")
+ADMIN_CREDENTIAL = _generate_test_credential("AdminAuth#")
+INVALID_CREDENTIAL = "nope"
+
+
 class DashboardTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.user = User.objects.create_user("ana", "ana@example.com", "pw-12345-xyz")
+        cls.user = User.objects.create_user("ana", "ana@example.com", USER_CREDENTIAL)
         cls.risk_v = MLModelVersion.objects.create(
             name="Disk failure risk", model_type=ModelType.FAILURE_PREDICTION, architecture="GRU",
             version="v1", training_dataset="test", trained_at=day(0), is_active=True,
@@ -52,7 +62,7 @@ class DashboardTests(TestCase):
                                       window_start=day(n), window_end=day(n + 13))
 
     def login(self):
-        self.client.login(username="ana", password="pw-12345-xyz")
+        self.client.login(username="ana", password=USER_CREDENTIAL)
 
     def test_pages_require_login(self):
         for name in ("summary", "resources", "models"):
@@ -63,14 +73,35 @@ class DashboardTests(TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_login_and_logout(self):
-        response = self.client.post(reverse("dashboard:login"), {"username": "ana", "password": "pw-12345-xyz"})
+        response = self.client.post(reverse("dashboard:login"), {"username": "ana", "password": USER_CREDENTIAL})
         self.assertRedirects(response, reverse("dashboard:summary"))
         response = self.client.post(reverse("dashboard:logout"))
         self.assertEqual(response.status_code, 302)
         self.assertEqual(self.client.get(reverse("dashboard:summary")).status_code, 302)
 
+    def test_admin_login_redirects_to_admin_dashboard(self):
+        User.objects.create_superuser("superadmin", "superadmin@example.com", ADMIN_CREDENTIAL)
+        response = self.client.post(reverse("dashboard:login"), {"username": "superadmin", "password": ADMIN_CREDENTIAL})
+        self.assertRedirects(response, reverse("admin:index"))
+
+    def test_admin_dashboard_has_go_to_app_button(self):
+        User.objects.create_superuser("superadmin2", "superadmin2@example.com", ADMIN_CREDENTIAL)
+        self.client.login(username="superadmin2", password=ADMIN_CREDENTIAL)
+        response = self.client.get(reverse("admin:index"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Go to DeepPredict App")
+        self.assertContains(response, reverse("dashboard:summary"))
+
+    def test_app_sidebar_shows_admin_link_for_admin(self):
+        User.objects.create_superuser("superadmin3", "superadmin3@example.com", ADMIN_CREDENTIAL)
+        self.client.login(username="superadmin3", password=ADMIN_CREDENTIAL)
+        response = self.client.get(reverse("dashboard:summary"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Admin Dashboard")
+        self.assertContains(response, reverse("admin:index"))
+
     def test_wrong_password_shows_error(self):
-        response = self.client.post(reverse("dashboard:login"), {"username": "ana", "password": "nope"})
+        response = self.client.post(reverse("dashboard:login"), {"username": "ana", "password": INVALID_CREDENTIAL})
         self.assertContains(response, "Wrong username or password")
 
     def test_summary_counts(self):

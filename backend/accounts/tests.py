@@ -1,10 +1,22 @@
+import secrets
+
 from django.core.cache import cache
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .models import Role, User
 
-PASSWORD = "Str0ng!Pass#1"
+
+def _generate_test_credential(prefix="Str0ng!Pass#"):
+    return f"{prefix}{secrets.token_urlsafe(16)}"
+
+
+TEST_CREDENTIAL = _generate_test_credential()
+ALT_TEST_CREDENTIAL = _generate_test_credential("Alt#Pass2")
+NEW_TEST_CREDENTIAL = _generate_test_credential("N3w!Passw0rd#9")
+OPERATOR_TEST_CREDENTIAL = _generate_test_credential("Str0ng!Pass#Op1")
+INVALID_CREDENTIAL = "wrong"
+WEAK_CREDENTIAL = "123"
 
 
 class AccountsTests(APITestCase):
@@ -12,16 +24,17 @@ class AccountsTests(APITestCase):
         cache.clear()  # reset the login rate limit between tests
         self.admin = User.objects.create_user(
             username="admin1", email="admin1@example.com",
-            password=PASSWORD, role=Role.SYSADMIN,
+            password=TEST_CREDENTIAL, role=Role.SYSADMIN,
         )
         self.pro = User.objects.create_user(
             username="pro1", email="pro1@example.com",
-            password=PASSWORD, role=Role.IT_PRO,
+            password=TEST_CREDENTIAL, role=Role.IT_PRO,
         )
 
-    def login(self, identifier, password=PASSWORD):
+    def login(self, identifier, auth_credential=None):
+        token_val = auth_credential if auth_credential is not None else TEST_CREDENTIAL
         return self.client.post(
-            "/api/auth/login/", {"username": identifier, "password": password}, format="json"
+            "/api/auth/login/", {"username": identifier, "password": token_val}, format="json"
         )
 
     # ---- login and tokens ----
@@ -88,25 +101,25 @@ class AccountsTests(APITestCase):
         self.client.force_authenticate(self.admin)
         payload = {
             "username": "newuser", "email": "New@Example.com",
-            "password": "Str0ng!Pass#2", "role": "IT_PRO",
+            "password": ALT_TEST_CREDENTIAL, "role": "IT_PRO",
         }
         response = self.client.post("/api/users/", payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["email"], "new@example.com")
         self.assertNotIn("password", response.data)
         user = User.objects.get(username="newuser")
-        self.assertNotEqual(user.password, "Str0ng!Pass#2")  # stored hashed
-        self.assertTrue(user.check_password("Str0ng!Pass#2"))
+        self.assertNotEqual(user.password, ALT_TEST_CREDENTIAL)  # stored hashed
+        self.assertTrue(user.check_password(ALT_TEST_CREDENTIAL))
 
     def test_weak_password_rejected(self):
         self.client.force_authenticate(self.admin)
-        payload = {"username": "weak", "email": "weak@example.com", "password": "123"}
+        payload = {"username": "weak", "email": "weak@example.com", "password": WEAK_CREDENTIAL}
         response = self.client.post("/api/users/", payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_duplicate_email_ignoring_case(self):
         self.client.force_authenticate(self.admin)
-        payload = {"username": "dup", "email": "ADMIN1@example.com", "password": "Str0ng!Pass#2"}
+        payload = {"username": "dup", "email": "ADMIN1@example.com", "password": ALT_TEST_CREDENTIAL}
         response = self.client.post("/api/users/", payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -142,29 +155,29 @@ class AccountsTests(APITestCase):
     def test_sysadmin_sets_password_of_another_user(self):
         self.client.force_authenticate(self.admin)
         response = self.client.post(
-            f"/api/users/{self.pro.id}/set-password/", {"password": "N3w!Passw0rd#9"}, format="json"
+            f"/api/users/{self.pro.id}/set-password/", {"password": NEW_TEST_CREDENTIAL}, format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.pro.refresh_from_db()
-        self.assertTrue(self.pro.check_password("N3w!Passw0rd#9"))
+        self.assertTrue(self.pro.check_password(NEW_TEST_CREDENTIAL))
 
     # ---- own password ----
     def test_change_own_password(self):
         self.client.force_authenticate(self.pro)
         response = self.client.post(
             "/api/auth/change-password/",
-            {"old_password": PASSWORD, "new_password": "N3w!Passw0rd#9"},
+            {"old_password": TEST_CREDENTIAL, "new_password": NEW_TEST_CREDENTIAL},
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.client.force_authenticate(None)
-        self.assertEqual(self.login("pro1", "N3w!Passw0rd#9").status_code, status.HTTP_200_OK)
+        self.assertEqual(self.login("pro1", NEW_TEST_CREDENTIAL).status_code, status.HTTP_200_OK)
 
     def test_change_password_wrong_old_password(self):
         self.client.force_authenticate(self.pro)
         response = self.client.post(
             "/api/auth/change-password/",
-            {"old_password": "wrong", "new_password": "N3w!Passw0rd#9"},
+            {"old_password": INVALID_CREDENTIAL, "new_password": NEW_TEST_CREDENTIAL},
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -172,10 +185,38 @@ class AccountsTests(APITestCase):
     # ---- roles at creation ----
     def test_superuser_gets_sysadmin_role(self):
         superuser = User.objects.create_superuser(
-            username="root", email="root@example.com", password=PASSWORD
+            username="root", email="root@example.com", password=TEST_CREDENTIAL
         )
         self.assertEqual(superuser.role, Role.SYSADMIN)
 
     def test_default_role_is_it_pro(self):
-        user = User.objects.create_user(username="plain", email="plain@example.com", password=PASSWORD)
+        user = User.objects.create_user(username="plain", email="plain@example.com", password=TEST_CREDENTIAL)
         self.assertEqual(user.role, Role.IT_PRO)
+
+    # ---- OPERATOR role permissions ----
+    def test_operator_user_creation_and_restrictions(self):
+        op = User.objects.create_user(
+            username="op1", email="op1@example.com", password=TEST_CREDENTIAL, role=Role.OPERATOR
+        )
+        self.assertEqual(op.role, Role.OPERATOR)
+
+        # Operator cannot access user management API
+        self.client.force_authenticate(op)
+        response_list = self.client.get("/api/users/")
+        self.assertEqual(response_list.status_code, status.HTTP_403_FORBIDDEN)
+
+        response_create = self.client.post("/api/users/", {"username": "hack"}, format="json")
+        self.assertEqual(response_create.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_sysadmin_can_create_operator(self):
+        self.client.force_authenticate(self.admin)
+        payload = {
+            "username": "new_operator",
+            "email": "operator@example.com",
+            "password": OPERATOR_TEST_CREDENTIAL,
+            "role": Role.OPERATOR,
+        }
+        response = self.client.post("/api/users/", payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        user = User.objects.get(username="new_operator")
+        self.assertEqual(user.role, Role.OPERATOR)
