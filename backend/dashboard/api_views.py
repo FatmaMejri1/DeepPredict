@@ -226,6 +226,42 @@ class DriveTelemetryAPIView(APIView):
         return Response(data)
 
 
+class DrivePredictionHistoryAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            drive = disks_with_latest().get(pk=pk)
+        except Resource.DoesNotExist:
+            raise NotFound("Drive not found.")
+
+        history = (
+            Prediction.objects.filter(resource=drive)
+            .select_related("model_version")
+            .order_by("-window_end", "-created_at")[:20]
+        )
+        return Response([
+            {
+                "id": prediction.pk,
+                "prediction_type": prediction.model_version.model_type,
+                "score": prediction.score,
+                "risk_level": prediction.risk_level,
+                "is_anomalous": prediction.is_anomalous,
+                "horizon_days": prediction.horizon_days,
+                "window_start": prediction.window_start.isoformat(),
+                "window_end": prediction.window_end.isoformat(),
+                "created_at": prediction.created_at.isoformat(),
+                "model": {
+                    "name": prediction.model_version.name,
+                    "version": prediction.model_version.version,
+                    "model_type": prediction.model_version.model_type,
+                    "architecture": prediction.model_version.architecture,
+                },
+            }
+            for prediction in history
+        ])
+
+
 class MLModelListAPIView(APIView):
     permission_classes = [IsAuthenticated]
 

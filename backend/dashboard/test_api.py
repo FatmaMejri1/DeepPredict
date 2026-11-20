@@ -245,6 +245,43 @@ class DashboardAPITests(TestCase):
         self.assertIn("smart", telem_resp.data)
         self.assertIn("risk", telem_resp.data)
 
+    def test_drive_prediction_history_returns_latest_twenty_with_model_context(self):
+        self.client.force_authenticate(user=self.operator)
+        anomaly = Prediction.objects.create(
+            resource=self.disk,
+            model_version=self.ano_model,
+            score=1.4,
+            is_anomalous=True,
+            window_start=self.metric.timestamp - timedelta(days=13),
+            window_end=self.metric.timestamp,
+        )
+
+        response = self.client.get(f"/api/drives/{self.disk.id}/predictions/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual([item["score"] for item in response.data], [1.4, 0.15])
+        anomaly_result = response.data[0]
+        self.assertEqual(anomaly_result["prediction_type"], ModelType.ANOMALY_DETECTION)
+        self.assertEqual(anomaly_result["score"], 1.4)
+        self.assertTrue(anomaly_result["is_anomalous"])
+        self.assertEqual(anomaly_result["window_start"], anomaly.window_start.isoformat())
+        self.assertEqual(anomaly_result["window_end"], anomaly.window_end.isoformat())
+        self.assertEqual(anomaly_result["created_at"], anomaly.created_at.isoformat())
+        self.assertEqual(anomaly_result["model"], {
+            "name": self.ano_model.name,
+            "version": self.ano_model.version,
+            "model_type": self.ano_model.model_type,
+            "architecture": self.ano_model.architecture,
+        })
+
+    def test_drive_prediction_history_requires_authentication_and_valid_drive(self):
+        unauthenticated = self.client.get(f"/api/drives/{self.disk.id}/predictions/")
+        self.assertEqual(unauthenticated.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.client.force_authenticate(user=self.operator)
+        unknown = self.client.get("/api/drives/00000000-0000-0000-0000-000000000000/predictions/")
+        self.assertEqual(unknown.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_telemetry_api_prepares_ordered_smart_and_risk_series(self):
         later = self.metric.timestamp + timedelta(days=1)
         Metric.objects.create(
