@@ -30,6 +30,16 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_size_query_param = "page_size"
     max_page_size = 100
 
+    def get_page_number(self, request, paginator):
+        page_number = super().get_page_number(request, paginator)
+        try:
+            page_number = int(page_number)
+        except (TypeError, ValueError):
+            return 1
+        if page_number < 1:
+            return 1
+        return min(page_number, paginator.num_pages)
+
 
 class DashboardSummaryAPIView(APIView):
     permission_classes = [IsAuthenticated]
