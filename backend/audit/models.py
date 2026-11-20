@@ -13,6 +13,7 @@ class ActionType(models.TextChoices):
     DELETE = "DELETE", "Entity Deleted"
     PREDICT_RUN = "PREDICT_RUN", "Inference Executed"
     CONFIG_CHANGE = "CONFIG_CHANGE", "Configuration Changed"
+    TELEMETRY_UPLOAD = "TELEMETRY_UPLOAD", "Telemetry Uploaded"
 
 
 class AuditLog(models.Model):
