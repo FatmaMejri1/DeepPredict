@@ -1,0 +1,13 @@
+-r requirements-service.txt
+
+# AI-service test tooling (kept out of the runtime image).
+coverage==7.17.3
+httpx2==2.16.2
+httpcore2==2.16.2
+iniconfig==2.3.1
+packaging==26.3
+pluggy==1.7.0
+Pygments==2.21.0
+pytest==9.2.0
+pytest-cov==7.1.0
+truststore==0.10.5

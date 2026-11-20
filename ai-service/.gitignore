@@ -1,5 +1,12 @@
 data/
-.venv/
+.venv*/
 __pycache__/
 .ipynb_checkpoints/
 node_modules/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage*
+htmlcov/
+coverage.xml
+test-results.xml

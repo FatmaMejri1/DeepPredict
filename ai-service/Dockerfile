@@ -4,8 +4,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app
 
 COPY requirements-service.txt .
-RUN pip install --no-cache-dir --default-timeout=600 --retries 10 torch==2.15.0+cpu --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple \
-    && pip install --no-cache-dir -r requirements-service.txt
+RUN pip install --no-cache-dir --default-timeout=600 --retries 10 \
+    --index-url https://download.pytorch.org/whl/cpu \
+    --extra-index-url https://pypi.org/simple \
+    -r requirements-service.txt
 
 COPY dp_ml ./dp_ml
 COPY service ./service
