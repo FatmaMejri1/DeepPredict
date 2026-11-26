@@ -128,4 +128,10 @@ class LoginSerializer(TokenObtainPairSerializer):
                 attrs[self.username_field] = user.get_username()
         data = super().validate(attrs)
         data["user"] = UserSerializer(self.user).data
+
+        # Explicitly dispatch user_logged_in signal for JWT API login
+        from django.contrib.auth.signals import user_logged_in
+        request = self.context.get("request")
+        user_logged_in.send(sender=self.user.__class__, request=request, user=self.user)
+
         return data

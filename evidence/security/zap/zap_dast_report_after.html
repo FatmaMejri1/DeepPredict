@@ -1,0 +1,3169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ZAP by Checkmarx Scanning Report</title>
+<link
+	href="zap_dast_report_after/normalize/normalize.css" rel="stylesheet">
+<link
+	href="zap_dast_report_after/themes/original/main.css" rel="stylesheet">
+<link
+	href="zap_dast_report_after/themes/original/colors.css" rel="stylesheet">
+</head>
+<body>
+	<header>
+		<h1>ZAP by Checkmarx Scanning Report</h1>
+		<p>
+			<span>Generated with</span> <a href="https://zaproxy.org"><img
+				src="zap_dast_report_after/zap32x32.png" alt="The ZAP logo" class="zap-logo">ZAP</a>
+			<span>on jeu. 19 nov. 2026, at 14:00:46</span>
+		</p>
+		<p>ZAP Version: 2.17.0</p>
+		<p>
+			ZAP by <a href="https://checkmarx.com/">Checkmarx</a>
+		</p>
+	</header>
+
+	<main>
+
+		<section id="contents" class="contents">
+			<h2>Contents</h2>
+			<nav>
+				<ol>
+					<li><a
+						href="#about-this-report">About This Report</a>
+						<ol>
+							
+							<li><a
+								href="#report-parameters">Report Parameters</a></li>
+						</ol></li>
+					<data-th-block>
+					<li><a
+						href="#summaries">Summaries</a>
+						<ol>
+							<li><a
+								href="#risk-confidence-counts">Alert Counts by Risk and Confidence</a></li>
+							<li><a
+								href="#site-risk-counts">Alert Counts by Site and Risk</a></li>
+							<li><a
+								href="#alert-type-counts">Alert Counts by Alert Type</a></li>
+							<li><a
+								href="#insights">Insights</a></li>
+						</ol></li>
+					<li><a
+						href="#alerts">Alerts</a>
+						<ol>
+							
+							 
+							
+							
+							
+							
+							<li><a
+								href="#alerts--risk-2-confidence-3"><span>Risk</span>=<span
+									class="risk-level">Moyen</span>, <span>Confidence</span>=<span
+									class="confidence-level">Haut</span> <span>(1)</span></a></li>
+							
+							
+							
+							
+							  
+							
+							
+							
+							
+							<li><a
+								href="#alerts--risk-1-confidence-3"><span>Risk</span>=<span
+									class="risk-level">Faible</span>, <span>Confidence</span>=<span
+									class="confidence-level">Haut</span> <span>(1)</span></a></li>
+							
+							<li><a
+								href="#alerts--risk-1-confidence-2"><span>Risk</span>=<span
+									class="risk-level">Faible</span>, <span>Confidence</span>=<span
+									class="confidence-level">Moyen</span> <span>(2)</span></a></li>
+							
+							
+							  
+							
+							
+							
+							
+							<li><a
+								href="#alerts--risk-0-confidence-3"><span>Risk</span>=<span
+									class="risk-level">Pour information</span>, <span>Confidence</span>=<span
+									class="confidence-level">Haut</span> <span>(1)</span></a></li>
+							
+							<li><a
+								href="#alerts--risk-0-confidence-2"><span>Risk</span>=<span
+									class="risk-level">Pour information</span>, <span>Confidence</span>=<span
+									class="confidence-level">Moyen</span> <span>(1)</span></a></li>
+							
+							
+							  
+						</ol></li>
+					<li><a
+						href="#appendix">Appendix</a>
+						<ol>
+							<li><a
+								href="#alert-types">Alert Types</a></li>
+						</ol></li>
+					</data-th-block>
+				</ol>
+			</nav>
+		</section>
+
+		<section
+			id="about-this-report" class="about-this-report">
+			<h2>About This Report</h2>
+
+			
+
+			<section
+				id="report-parameters">
+				<h3>Report Parameters</h3>
+				<div class="report-parameters--container">
+					<h4>Contexts</h4>
+					
+					
+					<p>No contexts were selected, so all contexts were included by default.</p>
+					  
+
+					<h4>Sites</h4>
+					
+					<p>The following sites were included:</p>
+					<ul class="sites-list">
+						<li><span class="site">http://127.0.0.1:8000</span></li>
+					</ul>
+					
+					<p>(If no sites were selected, all sites were included by default.)</p>
+					<p>An included site must also be within one of the included contexts for its data to be included in the report.</p>
+
+					<h4>Risk levels</h4>
+					<p>
+						<span>Included</span>:
+						 
+						<span class="included-risk-codes"><span class="risk-level">Haut</span>, <span class="risk-level">Moyen</span>, <span class="risk-level">Faible</span>, <span class="risk-level">Pour information</span></span>
+					</p>
+					<p>
+						<span>Excluded</span>:
+						 <span>None</span>
+						
+					</p>
+
+					<h4>Confidence levels</h4>
+					<p>
+						<span>Included</span>:
+						
+						
+						<span class="included-confidence-codes"><span class="confidence-level">User Confirmed</span>, <span class="confidence-level">Haut</span>, <span class="confidence-level">Moyen</span>, <span class="confidence-level">Faible</span></span>
+					</p>
+					<p>
+						<span>Excluded</span>:
+						
+						
+						<span class="included-confidence-codes"> <span class="confidence-level">User Confirmed</span>, <span class="confidence-level">Haut</span>, <span class="confidence-level">Moyen</span>, <span class="confidence-level">Faible</span>, <span class="confidence-level">Faux positif</span></span>
+					</p>
+				</div>
+			</section>
+		</section>
+
+		
+		<section>
+			
+		</section>
+		
+		<section id="summaries" class="summaries">
+			<h2>Summaries</h2>
+
+			<section
+				id="risk-confidence-counts">
+				<h3>Alert Counts by Risk and Confidence</h3>
+				<table class="risk-confidence-counts-table">
+					<caption>
+						<p>This table shows the number of alerts for each level of risk and confidence included in the report.</p>
+						<p>(The percentages in brackets represent the count as a percentage of the total number of alerts included in the report, rounded to one decimal place.)</p>
+					</caption>
+					<colgroup>
+						<col>
+						<col>
+					</colgroup>
+					<colgroup>
+						<col
+							style="width: 14.0%"><col
+							style="width: 14.0%"><col
+							style="width: 14.0%"><col
+							style="width: 14.0%">
+						<col style="width: 14.0%">
+					</colgroup>
+					<thead>
+						<tr>
+							<td colspan="2" rowspan="2"></td>
+							<th scope="colgroup"
+								colspan="5">Confidence</th>
+						</tr>
+						<tr>
+							<th scope="col">User Confirmed</th>
+							<th scope="col">Haut</th>
+							<th scope="col">Moyen</th>
+							<th scope="col">Faible</th>
+							<th scope="col">Total</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="rowgroup"
+								rowspan="5">Risk</th>
+							<th scope="row">Haut</th>
+							<td><span>0</span><br> <span
+								class="additional-info-percentages">(0,0 %)</span></td>
+							<td><span>0</span><br> <span
+								class="additional-info-percentages">(0,0 %)</span></td>
+							<td><span>0</span><br> <span
+								class="additional-info-percentages">(0,0 %)</span></td>
+							<td><span>0</span><br> <span
+								class="additional-info-percentages">(0,0 %)</span></td>
+							<td><span>0</span><br> <span class="additional-info-percentages">(0,0 %)</span></td>
+						</tr>
+						<tr>
+							
+							<th scope="row">Moyen</th>
+							<td><span>0</span><br> <span
+								class="additional-info-percentages">(0,0 %)</span></td>
+							<td><span>1</span><br> <span
+								class="additional-info-percentages">(16,7 %)</span></td>
+							<td><span>0</span><br> <span
+								class="additional-info-percentages">(0,0 %)</span></td>
+							<td><span>0</span><br> <span
+								class="additional-info-percentages">(0,0 %)</span></td>
+							<td><span>1</span><br> <span class="additional-info-percentages">(16,7 %)</span></td>
+						</tr>
+						<tr>
+							
+							<th scope="row">Faible</th>
+							<td><span>0</span><br> <span
+								class="additional-info-percentages">(0,0 %)</span></td>
+							<td><span>1</span><br> <span
+								class="additional-info-percentages">(16,7 %)</span></td>
+							<td><span>2</span><br> <span
+								class="additional-info-percentages">(33,3 %)</span></td>
+							<td><span>0</span><br> <span
+								class="additional-info-percentages">(0,0 %)</span></td>
+							<td><span>3</span><br> <span class="additional-info-percentages">(50,0 %)</span></td>
+						</tr>
+						<tr>
+							
+							<th scope="row">Pour information</th>
+							<td><span>0</span><br> <span
+								class="additional-info-percentages">(0,0 %)</span></td>
+							<td><span>1</span><br> <span
+								class="additional-info-percentages">(16,7 %)</span></td>
+							<td><span>1</span><br> <span
+								class="additional-info-percentages">(16,7 %)</span></td>
+							<td><span>0</span><br> <span
+								class="additional-info-percentages">(0,0 %)</span></td>
+							<td><span>2</span><br> <span class="additional-info-percentages">(33,3 %)</span></td>
+						</tr>
+						<tr>
+							<th scope="row">Total</th>
+							<td><span>0</span><br> <span
+								class="additional-info-percentages">(0,0 %)</span></td>
+							<td><span>3</span><br> <span
+								class="additional-info-percentages">(50,0 %)</span></td>
+							<td><span>3</span><br> <span
+								class="additional-info-percentages">(50,0 %)</span></td>
+							<td><span>0</span><br> <span
+								class="additional-info-percentages">(0,0 %)</span></td>
+							<td><span>6</span><br> <span
+								class="additional-info-percentages">(100%)</span></td>
+						</tr>
+					</tbody>
+				</table>
+			</section>
+
+			<section
+				id="site-risk-counts">
+				<h3>Alert Counts by Site and Risk</h3>
+				<table class="site-risk-counts-table">
+					<caption>
+						<p>This table shows, for each site for which one or more alerts were raised, the number of alerts raised at each risk level.</p>
+						<p>Alerts with a confidence level of &quot;False Positive&quot; have been excluded from these counts.</p>
+						<p>(The numbers in brackets are the number of alerts raised for the site at or above that risk level.)</p>
+					</caption>
+					<colgroup>
+						<col>
+						<col>
+					</colgroup>
+					<colgroup>
+						<col
+							style="width: 16.25%"><col
+							style="width: 16.25%"><col
+							style="width: 16.25%"><col
+							style="width: 16.25%">
+					</colgroup>
+					<thead>
+						<tr>
+							<td colspan="2" rowspan="2"></td>
+							<th scope="colgroup" colspan="4">Risk</th>
+						</tr>
+						<tr>
+							<th scope="col">
+								<span>Haut</span><br>  <span
+									class="additional-info-percentages">(= Haut)</span>  
+							</th>
+							<th scope="col">
+								<span>Moyen</span><br>   <span
+									class="additional-info-percentages">(&gt;= Moyen)</span> 
+							</th>
+							<th scope="col">
+								<span>Faible</span><br>   <span
+									class="additional-info-percentages">(&gt;= Faible)</span> 
+							</th>
+							<th scope="col">
+								<span>Pour information</span><br>   <span
+									class="additional-info-percentages">(&gt;= Pour information)</span> 
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="rowgroup"
+								rowspan="1">Site</th>
+							<th scope="row">http://127.0.0.1:8000</th>
+							
+							<td><span>0</span><br> <span
+								class="additional-info-percentages">(0)</span></td>
+							<td><span>1</span><br> <span
+								class="additional-info-percentages">(1)</span></td>
+							<td><span>3</span><br> <span
+								class="additional-info-percentages">(4)</span></td>
+							<td><span>2</span><br> <span
+								class="additional-info-percentages">(6)</span></td>
+							
+						</tr>
+					</tbody>
+				</table>
+			</section>
+
+			<section
+				id="alert-type-counts">
+				<h3>Alert Counts by Alert Type</h3>
+				<table class="alert-type-counts-table">
+					<caption>
+						<p>This table shows the number of alerts of each alert type, together with the alert type&#39;s risk level.</p>
+						<p>(The percentages in brackets represent each count as a percentage, rounded to one decimal place, of the total number of alerts included in this report.)</p>
+					</caption>
+					<thead>
+						<tr>
+							<th scope="col">Alert type</th>
+							<th scope="col">Risk</th>
+							<th scope="col">Count</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="row"><a
+								href="#alert-type-0">Content Security Policy (CSP) Header Not Set</a></th>
+							<td class="risk-level">Moyen</td>
+							<td><span>5</span><br> <span
+								class="additional-info-percentages">(83,3 %)</span></td>
+						</tr>
+						<tr>
+							<th scope="row"><a
+								href="#alert-type-1">Cookie No HttpOnly Flag</a></th>
+							<td class="risk-level">Faible</td>
+							<td><span>3</span><br> <span
+								class="additional-info-percentages">(50,0 %)</span></td>
+						</tr>
+						<tr>
+							<th scope="row"><a
+								href="#alert-type-2">Server Leaks Version Information via &quot;Server&quot; HTTP Response Header Field</a></th>
+							<td class="risk-level">Faible</td>
+							<td><span>5</span><br> <span
+								class="additional-info-percentages">(83,3 %)</span></td>
+						</tr>
+						<tr>
+							<th scope="row"><a
+								href="#alert-type-3">X-Content-Type-Options Header Missing</a></th>
+							<td class="risk-level">Faible</td>
+							<td><span>1</span><br> <span
+								class="additional-info-percentages">(16,7 %)</span></td>
+						</tr>
+						<tr>
+							<th scope="row"><a
+								href="#alert-type-4">Authentication Request Identified</a></th>
+							<td class="risk-level">Pour information</td>
+							<td><span>2</span><br> <span
+								class="additional-info-percentages">(33,3 %)</span></td>
+						</tr>
+						<tr>
+							<th scope="row"><a
+								href="#alert-type-5">Session Management Response Identified</a></th>
+							<td class="risk-level">Pour information</td>
+							<td><span>5</span><br> <span
+								class="additional-info-percentages">(83,3 %)</span></td>
+						</tr>
+					</tbody>
+					<tfoot>
+						<tr>
+							<th scope="row">Total</th>
+							<td></td>
+							<td>6</td>
+						</tr>
+					</tfoot>
+				</table>
+			</section>
+			
+			<section
+				id="insights">
+				<h3 class="left-header">Insights</h3>
+				
+				<table class="insights-table">
+						<caption>
+						<p>This table shows information that is likely to be very relevant to you, but which is not related to vulnerabilities, or potentially even related to the application in question.</p>
+					</caption>
+					<thead>
+					<tr>
+						<th scope="col">Level</th>
+						<th scope="col">Raison</th>
+						<th scope="col">Site</th>
+						<th scope="col">Description</th>
+						<th scope="col">Statistic</th>
+					</tr>
+					</thead>
+					<tbody>
+					
+						<tr>
+						<td class="risk-1">
+							<div>Faible</div>
+						</td>
+						<td>
+							<div>Exceeded High</div>
+						</td>
+						<td>
+							<div>http://127.0.0.1:8000</div>
+						</td>
+						<td>
+							<div>Percentage of slow responses</div>
+						</td>
+						<td align="center">
+							<div>68 %</div>
+						</td>
+						</tr>
+					
+						<tr>
+						<td class="risk-0">
+							<div>Info</div>
+						</td>
+						<td>
+							<div>Pour information</div>
+						</td>
+						<td>
+							<div></div>
+						</td>
+						<td>
+							<div>Percentage of network failures</div>
+						</td>
+						<td align="center">
+							<div>1 %</div>
+						</td>
+						</tr>
+					
+						<tr>
+						<td class="risk-0">
+							<div>Info</div>
+						</td>
+						<td>
+							<div>Pour information</div>
+						</td>
+						<td>
+							<div>http://127.0.0.1:8000</div>
+						</td>
+						<td>
+							<div>Percentage of responses with status code 2xx</div>
+						</td>
+						<td align="center">
+							<div>95 %</div>
+						</td>
+						</tr>
+					
+						<tr>
+						<td class="risk-0">
+							<div>Info</div>
+						</td>
+						<td>
+							<div>Pour information</div>
+						</td>
+						<td>
+							<div>http://127.0.0.1:8000</div>
+						</td>
+						<td>
+							<div>Percentage of responses with status code 3xx</div>
+						</td>
+						<td align="center">
+							<div>1 %</div>
+						</td>
+						</tr>
+					
+						<tr>
+						<td class="risk-0">
+							<div>Info</div>
+						</td>
+						<td>
+							<div>Pour information</div>
+						</td>
+						<td>
+							<div>http://127.0.0.1:8000</div>
+						</td>
+						<td>
+							<div>Percentage of responses with status code 4xx</div>
+						</td>
+						<td align="center">
+							<div>3 %</div>
+						</td>
+						</tr>
+					
+						<tr>
+						<td class="risk-0">
+							<div>Info</div>
+						</td>
+						<td>
+							<div>Pour information</div>
+						</td>
+						<td>
+							<div>http://127.0.0.1:8000</div>
+						</td>
+						<td>
+							<div>Percentage of endpoints with content type text/css</div>
+						</td>
+						<td align="center">
+							<div>9 %</div>
+						</td>
+						</tr>
+					
+						<tr>
+						<td class="risk-0">
+							<div>Info</div>
+						</td>
+						<td>
+							<div>Pour information</div>
+						</td>
+						<td>
+							<div>http://127.0.0.1:8000</div>
+						</td>
+						<td>
+							<div>Percentage of endpoints with content type text/html</div>
+						</td>
+						<td align="center">
+							<div>90 %</div>
+						</td>
+						</tr>
+					
+						<tr>
+						<td class="risk-0">
+							<div>Info</div>
+						</td>
+						<td>
+							<div>Pour information</div>
+						</td>
+						<td>
+							<div>http://127.0.0.1:8000</div>
+						</td>
+						<td>
+							<div>Percentage of endpoints with method GET</div>
+						</td>
+						<td align="center">
+							<div>81 %</div>
+						</td>
+						</tr>
+					
+						<tr>
+						<td class="risk-0">
+							<div>Info</div>
+						</td>
+						<td>
+							<div>Pour information</div>
+						</td>
+						<td>
+							<div>http://127.0.0.1:8000</div>
+						</td>
+						<td>
+							<div>Percentage of endpoints with method POST</div>
+						</td>
+						<td align="center">
+							<div>18 %</div>
+						</td>
+						</tr>
+					
+						<tr>
+						<td class="risk-0">
+							<div>Info</div>
+						</td>
+						<td>
+							<div>Pour information</div>
+						</td>
+						<td>
+							<div>http://127.0.0.1:8000</div>
+						</td>
+						<td>
+							<div>Count of total endpoints</div>
+						</td>
+						<td align="center">
+							<div>11   </div>
+						</td>
+						</tr>
+					
+					</tbody>
+				</table>
+			</section>
+		</section>
+
+		<section id="alerts" class="alerts">
+			<h2>Alerts</h2>
+			<ol>
+				
+				 
+				 
+				
+				
+				<li id="alerts--risk-2-confidence-3">
+					<h3>
+						<span>Risk</span>=<span
+							class="risk-level">Moyen</span>, <span>Confidence</span>=<span
+							class="confidence-level">Haut</span> <span>(1)</span>
+					</h3>
+					<ol>
+						
+						<li class="alerts--site-li">
+							<h4>
+								<span class="site">http://127.0.0.1:8000</span> <span>(1)</span>
+							</h4>
+							<ol>
+								
+								<li>
+									<h5>
+										<a
+											href="#alert-type-0">Content Security Policy (CSP) Header Not Set</a> <span>(1)</span>
+									</h5>
+									<ol>
+										<li><details>
+												<summary>
+													<span class="request-method-n-url">GET http://127.0.0.1:8000/robots.txt</span>
+												</summary>
+												
+<table class="alerts-table">
+	<tr>
+		<th scope="row">Alert tags</th>
+		<td>
+			<ul class="alert-tags-list">
+				<li>
+					<span><a href="https://owasp.org/Top10/2021/A05_2021-Security_Misconfiguration/">OWASP_2021_A05</a></span> 
+				</li>
+				<li>
+					 <span>POLICY_QA_STD = </span>
+				</li>
+				<li>
+					 <span>POLICY_PENTEST = </span>
+				</li>
+				<li>
+					<span><a href="https://www.zaproxy.org/docs/desktop/addons/common-library/alerttags/#systemic">SYSTEMIC</a></span> 
+				</li>
+				<li>
+					<span><a href="https://cwe.mitre.org/data/definitions/693.html">CWE-693</a></span> 
+				</li>
+				<li>
+					<span><a href="https://owasp.org/www-project-top-ten/2017/A6_2017-Security_Misconfiguration.html">OWASP_2017_A06</a></span> 
+				</li>
+				<li>
+					<span><a href="https://owasp.org/Top10/2025/A02_2025-Security_Misconfiguration/">OWASP_2025_A02</a></span> 
+				</li>
+			</ul>
+		</td>
+	</tr>
+	<tr>
+		<th scope="row">Alert description</th>
+		<td> 
+<p>Content Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks, including Cross Site Scripting (XSS) and data injection attacks. These attacks are used for everything from data theft to site defacement or distribution of malware. CSP provides a set of standard HTTP headers that allow website owners to declare approved sources of content that browsers should be allowed to load on that page — covered types are JavaScript, CSS, HTML frames, fonts, images and embeddable objects such as Java applets, ActiveX, audio and video files.</p>
+ </td>
+	</tr>
+	
+	<tr>
+		<th scope="row">Request</th>
+		<td><details open="open">
+				<summary>Request line and header section (239 bytes)</summary>
+				
+				<pre><code>GET http://127.0.0.1:8000/robots.txt HTTP/1.1
+host: 127.0.0.1:8000
+user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+pragma: no-cache
+cache-control: no-cache
+
+</code></pre>
+				
+				
+			</details> <details class="request-body" open="open">
+				<summary>Request body (0 bytes)</summary>
+				
+				<pre><code></code></pre>
+				
+				
+			</details></td>
+	</tr>
+	<tr>
+		<th scope="row">Response</th>
+		<td><details open="open">
+				<summary>Status line and header section (305 bytes)</summary>
+				
+				<pre><code>HTTP/1.1 404 Not Found
+Date: Thu, 19 Nov 2026 12:09:56 GMT
+Server: WSGIServer/0.2 CPython/3.14.6
+Content-Type: text/html; charset=utf-8
+X-Frame-Options: DENY
+Content-Length: 4308
+X-Content-Type-Options: nosniff
+Referrer-Policy: same-origin
+Cross-Origin-Opener-Policy: same-origin
+Vary: origin
+
+</code></pre>
+				
+				
+			</details> <details class="response-body">
+				<summary>Response body (4308 bytes)</summary>
+				
+				<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+  &lt;meta http-equiv=&quot;content-type&quot; content=&quot;text/html; charset=utf-8&quot;&gt;
+  &lt;title&gt;Page not found at /robots.txt&lt;/title&gt;
+  &lt;meta name=&quot;color-scheme&quot; content=&quot;light&quot; /&gt;
+  &lt;meta name=&quot;robots&quot; content=&quot;NONE,NOARCHIVE&quot;&gt;
+  &lt;style&gt;
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body &gt; header, body &gt; main, body &gt; footer { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:.4em; }
+    h1 small { font-size:60%; color:#666; font-weight:normal; }
+    table { border:none; border-collapse: collapse; width:100%; }
+    td, th { vertical-align:top; padding:2px 3px; }
+    th { width:12em; text-align:right; color:#666; padding-right:.5em; }
+    #info { background:#f6f6f6; }
+    #info ol { margin: 0.5em 4em; }
+    #info ol li { font-family: monospace; }
+    #summary { background: #ffc; }
+    #explanation { background:#eee; border-bottom: 0px none; }
+    pre.exception_value { font-family: sans-serif; color: #575757; font-size: 1.5em; margin: 10px 0 10px 0; }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;header id=&quot;summary&quot;&gt;
+    &lt;h1&gt;Page not found &lt;small&gt;(404)&lt;/small&gt;&lt;/h1&gt;
+    
+    &lt;table class=&quot;meta&quot;&gt;
+      &lt;tr&gt;
+        &lt;th scope=&quot;row&quot;&gt;Request Method:&lt;/th&gt;
+        &lt;td&gt;GET&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;th scope=&quot;row&quot;&gt;Request URL:&lt;/th&gt;
+        &lt;td&gt;http://127.0.0.1:8000/robots.txt&lt;/td&gt;
+      &lt;/tr&gt;
+      
+    &lt;/table&gt;
+  &lt;/header&gt;
+
+  &lt;main id=&quot;info&quot;&gt;
+    
+      &lt;p&gt;
+      Using the URLconf defined in &lt;code&gt;config.urls&lt;/code&gt;,
+      Django tried these URL patterns, in this order:
+      &lt;/p&gt;
+      &lt;ol&gt;
+        
+          &lt;li&gt;
+            
+              &lt;code&gt;
+                admin/
+                [namespace=&#39;admin&#39;]
+              &lt;/code&gt;
+            
+          &lt;/li&gt;
+        
+          &lt;li&gt;
+            
+              &lt;code&gt;
+                api/
+                
+              &lt;/code&gt;
+            
+          &lt;/li&gt;
+        
+          &lt;li&gt;
+            
+              &lt;code&gt;
+                api/schema/
+                [name=&#39;schema&#39;]
+              &lt;/code&gt;
+            
+          &lt;/li&gt;
+        
+          &lt;li&gt;
+            
+              &lt;code&gt;
+                api/docs/
+                [name=&#39;docs&#39;]
+              &lt;/code&gt;
+            
+          &lt;/li&gt;
+        
+          &lt;li&gt;
+            
+              &lt;code&gt;
+                
+                
+              &lt;/code&gt;
+            
+              &lt;code&gt;
+                
+                [name=&#39;summary&#39;]
+              &lt;/code&gt;
+            
+          &lt;/li&gt;
+        
+          &lt;li&gt;
+            
+              &lt;code&gt;
+                
+                
+              &lt;/code&gt;
+            
+              &lt;code&gt;
+                drives/
+                [name=&#39;resources&#39;]
+              &lt;/code&gt;
+            
+          &lt;/li&gt;
+        
+          &lt;li&gt;
+            
+              &lt;code&gt;
+                
+                
+              &lt;/code&gt;
+            
+              &lt;code&gt;
+                drives/&amp;lt;uuid:pk&amp;gt;/
+                [name=&#39;resource_detail&#39;]
+              &lt;/code&gt;
+            
+          &lt;/li&gt;
+        
+          &lt;li&gt;
+            
+              &lt;code&gt;
+                
+                
+              &lt;/code&gt;
+            
+              &lt;code&gt;
+                models/
+                [name=&#39;models&#39;]
+              &lt;/code&gt;
+            
+          &lt;/li&gt;
+        
+          &lt;li&gt;
+            
+              &lt;code&gt;
+                
+                
+              &lt;/code&gt;
+            
+              &lt;code&gt;
+                login/
+                [name=&#39;login&#39;]
+              &lt;/code&gt;
+            
+          &lt;/li&gt;
+        
+          &lt;li&gt;
+            
+              &lt;code&gt;
+                
+                
+              &lt;/code&gt;
+            
+              &lt;code&gt;
+                logout/
+                [name=&#39;logout&#39;]
+              &lt;/code&gt;
+            
+          &lt;/li&gt;
+        
+      &lt;/ol&gt;
+      &lt;p&gt;
+        
+          The current path, &lt;code&gt;robots.txt&lt;/code&gt;,
+        
+        didn’t match any of these.
+      &lt;/p&gt;
+    
+  &lt;/main&gt;
+
+  &lt;footer id=&quot;explanation&quot;&gt;
+    &lt;p&gt;
+      You’re seeing this error because you have &lt;code&gt;DEBUG = True&lt;/code&gt; in
+      your Django settings file. Change that to &lt;code&gt;False&lt;/code&gt;, and Django
+      will display a standard 404 page.
+    &lt;/p&gt;
+  &lt;/footer&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+				
+				
+			</details></td>
+	</tr>
+	
+	
+	
+	<tr>
+		<th scope="row">Solution</th>
+		<td> 
+<p>Ensure that your web server, application server, load balancer, etc. is configured to set the Content-Security-Policy header.</p>
+ </td>
+	</tr>
+</table>
+
+											</details></li>
+									</ol>
+								</li>
+								
+							</ol>
+						</li>
+						
+					</ol>
+				</li>
+				
+				
+				
+				
+				  
+				 
+				
+				
+				<li id="alerts--risk-1-confidence-3">
+					<h3>
+						<span>Risk</span>=<span
+							class="risk-level">Faible</span>, <span>Confidence</span>=<span
+							class="confidence-level">Haut</span> <span>(1)</span>
+					</h3>
+					<ol>
+						
+						<li class="alerts--site-li">
+							<h4>
+								<span class="site">http://127.0.0.1:8000</span> <span>(1)</span>
+							</h4>
+							<ol>
+								
+								<li>
+									<h5>
+										<a
+											href="#alert-type-2">Server Leaks Version Information via &quot;Server&quot; HTTP Response Header Field</a> <span>(1)</span>
+									</h5>
+									<ol>
+										<li><details>
+												<summary>
+													<span class="request-method-n-url">GET http://127.0.0.1:8000</span>
+												</summary>
+												
+<table class="alerts-table">
+	<tr>
+		<th scope="row">Alert tags</th>
+		<td>
+			<ul class="alert-tags-list">
+				<li>
+					<span><a href="https://owasp.org/Top10/2021/A05_2021-Security_Misconfiguration/">OWASP_2021_A05</a></span> 
+				</li>
+				<li>
+					 <span>POLICY_QA_STD = </span>
+				</li>
+				<li>
+					 <span>POLICY_PENTEST = </span>
+				</li>
+				<li>
+					<span><a href="https://www.zaproxy.org/docs/desktop/addons/common-library/alerttags/#systemic">SYSTEMIC</a></span> 
+				</li>
+				<li>
+					<span><a href="https://owasp.org/www-project-top-ten/2017/A6_2017-Security_Misconfiguration.html">OWASP_2017_A06</a></span> 
+				</li>
+				<li>
+					<span><a href="https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/02-Fingerprint_Web_Server">WSTG-v42-INFO-02</a></span> 
+				</li>
+				<li>
+					<span><a href="https://cwe.mitre.org/data/definitions/497.html">CWE-497</a></span> 
+				</li>
+				<li>
+					<span><a href="https://owasp.org/Top10/2025/A02_2025-Security_Misconfiguration/">OWASP_2025_A02</a></span> 
+				</li>
+			</ul>
+		</td>
+	</tr>
+	<tr>
+		<th scope="row">Alert description</th>
+		<td> 
+<p>The web/application server is leaking version information via the &quot;Server&quot; HTTP response header. Access to such information may facilitate attackers identifying other vulnerabilities your web/application server is subject to.</p>
+ </td>
+	</tr>
+	
+	<tr>
+		<th scope="row">Request</th>
+		<td><details open="open">
+				<summary>Request line and header section (228 bytes)</summary>
+				
+				<pre><code>GET http://127.0.0.1:8000 HTTP/1.1
+host: 127.0.0.1:8000
+user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+pragma: no-cache
+cache-control: no-cache
+
+</code></pre>
+				
+				
+			</details> <details class="request-body" open="open">
+				<summary>Request body (0 bytes)</summary>
+				
+				<pre><code></code></pre>
+				
+				
+			</details></td>
+	</tr>
+	<tr>
+		<th scope="row">Response</th>
+		<td><details open="open">
+				<summary>Status line and header section (332 bytes)</summary>
+				
+				<pre><code>HTTP/1.1 302 Found
+Date: Thu, 19 Nov 2026 12:09:56 GMT
+Server: WSGIServer/0.2 CPython/3.14.6
+Content-Type: text/html; charset=utf-8
+Location: /login/?next=/
+X-Frame-Options: DENY
+Content-Length: 0
+Vary: Cookie, origin
+X-Content-Type-Options: nosniff
+Referrer-Policy: same-origin
+Cross-Origin-Opener-Policy: same-origin
+
+</code></pre>
+				
+				
+			</details> <details class="response-body" open="open">
+				<summary>Response body (0 bytes)</summary>
+				
+				<pre><code></code></pre>
+				
+				
+			</details></td>
+	</tr>
+	
+	
+	<tr>
+		<th scope="row">Evidence</th>
+		<td><pre><code>WSGIServer/0.2 CPython/3.14.6</code></pre></td>
+	</tr>
+	<tr>
+		<th scope="row">Solution</th>
+		<td> 
+<p>Ensure that your web server, application server, load balancer, etc. is configured to suppress the &quot;Server&quot; header or provide generic details.</p>
+ </td>
+	</tr>
+</table>
+
+											</details></li>
+									</ol>
+								</li>
+								
+							</ol>
+						</li>
+						
+					</ol>
+				</li>
+				
+				<li id="alerts--risk-1-confidence-2">
+					<h3>
+						<span>Risk</span>=<span
+							class="risk-level">Faible</span>, <span>Confidence</span>=<span
+							class="confidence-level">Moyen</span> <span>(2)</span>
+					</h3>
+					<ol>
+						
+						<li class="alerts--site-li">
+							<h4>
+								<span class="site">http://127.0.0.1:8000</span> <span>(2)</span>
+							</h4>
+							<ol>
+								
+								<li>
+									<h5>
+										<a
+											href="#alert-type-1">Cookie No HttpOnly Flag</a> <span>(1)</span>
+									</h5>
+									<ol>
+										<li><details>
+												<summary>
+													<span class="request-method-n-url">GET http://127.0.0.1:8000</span>
+												</summary>
+												
+<table class="alerts-table">
+	<tr>
+		<th scope="row">Alert tags</th>
+		<td>
+			<ul class="alert-tags-list">
+				<li>
+					<span><a href="https://cwe.mitre.org/data/definitions/1004.html">CWE-1004</a></span> 
+				</li>
+				<li>
+					<span><a href="https://owasp.org/Top10/2021/A05_2021-Security_Misconfiguration/">OWASP_2021_A05</a></span> 
+				</li>
+				<li>
+					 <span>POLICY_QA_STD = </span>
+				</li>
+				<li>
+					<span><a href="https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/02-Testing_for_Cookies_Attributes">WSTG-v42-SESS-02</a></span> 
+				</li>
+				<li>
+					 <span>POLICY_PENTEST = </span>
+				</li>
+				<li>
+					<span><a href="https://www.zaproxy.org/docs/desktop/addons/common-library/alerttags/#systemic">SYSTEMIC</a></span> 
+				</li>
+				<li>
+					<span><a href="https://owasp.org/www-project-top-ten/2017/A6_2017-Security_Misconfiguration.html">OWASP_2017_A06</a></span> 
+				</li>
+				<li>
+					<span><a href="https://owasp.org/Top10/2025/A02_2025-Security_Misconfiguration/">OWASP_2025_A02</a></span> 
+				</li>
+				<li>
+					 <span>POLICY_DEV_STD = </span>
+				</li>
+			</ul>
+		</td>
+	</tr>
+	<tr>
+		<th scope="row">Alert description</th>
+		<td> 
+<p>A cookie has been set without the HttpOnly flag, which means that the cookie can be accessed by JavaScript. If a malicious script can be run on this page then the cookie will be accessible and can be transmitted to another site. If this is a session cookie then session hijacking may be possible.</p>
+ </td>
+	</tr>
+	
+	<tr>
+		<th scope="row">Request</th>
+		<td><details open="open">
+				<summary>Request line and header section (228 bytes)</summary>
+				
+				<pre><code>GET http://127.0.0.1:8000 HTTP/1.1
+host: 127.0.0.1:8000
+user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+pragma: no-cache
+cache-control: no-cache
+
+</code></pre>
+				
+				
+			</details> <details class="request-body" open="open">
+				<summary>Request body (0 bytes)</summary>
+				
+				<pre><code></code></pre>
+				
+				
+			</details></td>
+	</tr>
+	<tr>
+		<th scope="row">Response</th>
+		<td><details open="open">
+				<summary>Status line and header section (553 bytes)</summary>
+				
+				<pre><code>HTTP/1.1 200 OK
+Date: Thu, 19 Nov 2026 12:09:56 GMT
+Server: WSGIServer/0.2 CPython/3.14.6
+Content-Type: text/html; charset=utf-8
+Expires: Thu, 19 Nov 2026 12:09:56 GMT
+Cache-Control: max-age=0, no-cache, no-store, must-revalidate, private
+Vary: Cookie, origin
+X-Frame-Options: DENY
+Content-Length: 1450
+X-Content-Type-Options: nosniff
+Referrer-Policy: same-origin
+Cross-Origin-Opener-Policy: same-origin
+Set-Cookie: csrftoken=nL7df2vSg2WKgbOeb0nNQ9kxOdeyKLzb; expires=Thu, 18 Nov 2027 12:09:56 GMT; Max-Age=31449600; Path=/; SameSite=Lax
+
+</code></pre>
+				
+				
+			</details> <details class="response-body" open="open">
+				<summary>Response body (1450 bytes)</summary>
+				
+				<pre><code>&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;utf-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+  &lt;title&gt;Log in &amp;middot; DeepPredict&lt;/title&gt;
+  &lt;link rel=&quot;stylesheet&quot; href=&quot;/static/dashboard/css/dashboard.css?v=6&quot;&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  
+  &lt;main class=&quot;dp-auth-page&quot;&gt;
+  
+
+    
+&lt;section class=&quot;login-box&quot; aria-labelledby=&quot;login-title&quot;&gt;
+  &lt;div style=&quot;display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 24px;&quot;&gt;
+    &lt;span class=&quot;dp-brand-mark&quot;&gt;D&lt;/span&gt;
+    &lt;span class=&quot;dp-brand-name&quot; style=&quot;font-size: 19px;&quot;&gt;DeepPredict&lt;/span&gt;
+  &lt;/div&gt;
+
+  &lt;h1 id=&quot;login-title&quot; style=&quot;font-size: 18px; margin-bottom: 16px;&quot;&gt;Sign in to your workspace&lt;/h1&gt;
+
+  
+
+  &lt;form method=&quot;post&quot; novalidate&gt;
+    &lt;input type=&quot;hidden&quot; name=&quot;csrfmiddlewaretoken&quot; value=&quot;HZQRNncCDBWhGpEBbqZ0Sn0crdIPIGWXUANUSfxkJtIRMqiFcgcDymaz5gMdihlY&quot;&gt;
+    &lt;div&gt;
+      &lt;label for=&quot;id_username&quot;&gt;Username&lt;/label&gt;
+      &lt;input id=&quot;id_username&quot; name=&quot;username&quot; type=&quot;text&quot; autocomplete=&quot;username&quot; required autofocus placeholder=&quot;Enter your username&quot;&gt;
+    &lt;/div&gt;
+
+    &lt;div&gt;
+      &lt;label for=&quot;id_password&quot;&gt;Password&lt;/label&gt;
+      &lt;input id=&quot;id_password&quot; name=&quot;password&quot; type=&quot;password&quot; autocomplete=&quot;current-password&quot; required placeholder=&quot;Enter your password&quot;&gt;
+    &lt;/div&gt;
+
+    &lt;input type=&quot;hidden&quot; name=&quot;next&quot; value=&quot;/&quot;&gt;
+    &lt;button type=&quot;submit&quot; class=&quot;primary&quot;&gt;Sign In&lt;/button&gt;
+  &lt;/form&gt;
+&lt;/section&gt;
+
+
+  
+  &lt;/main&gt;
+  
+
+  
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+				
+				
+			</details></td>
+	</tr>
+	<tr>
+		<th scope="row">Parameter</th>
+		<td><pre><code>csrftoken</code></pre></td>
+	</tr>
+	
+	<tr>
+		<th scope="row">Evidence</th>
+		<td><pre><code>Set-Cookie: csrftoken</code></pre></td>
+	</tr>
+	<tr>
+		<th scope="row">Solution</th>
+		<td> 
+<p>Ensure that the HttpOnly flag is set for all cookies.</p>
+ </td>
+	</tr>
+</table>
+
+											</details></li>
+									</ol>
+								</li>
+								
+								<li>
+									<h5>
+										<a
+											href="#alert-type-3">X-Content-Type-Options Header Missing</a> <span>(1)</span>
+									</h5>
+									<ol>
+										<li><details>
+												<summary>
+													<span class="request-method-n-url">GET http://127.0.0.1:8000/static/dashboard/css/dashboard.css?v=6</span>
+												</summary>
+												
+<table class="alerts-table">
+	<tr>
+		<th scope="row">Alert tags</th>
+		<td>
+			<ul class="alert-tags-list">
+				<li>
+					<span><a href="https://owasp.org/Top10/2021/A05_2021-Security_Misconfiguration/">OWASP_2021_A05</a></span> 
+				</li>
+				<li>
+					 <span>POLICY_QA_STD = </span>
+				</li>
+				<li>
+					 <span>POLICY_PENTEST = </span>
+				</li>
+				<li>
+					<span><a href="https://www.zaproxy.org/docs/desktop/addons/common-library/alerttags/#systemic">SYSTEMIC</a></span> 
+				</li>
+				<li>
+					<span><a href="https://cwe.mitre.org/data/definitions/693.html">CWE-693</a></span> 
+				</li>
+				<li>
+					<span><a href="https://owasp.org/www-project-top-ten/2017/A6_2017-Security_Misconfiguration.html">OWASP_2017_A06</a></span> 
+				</li>
+				<li>
+					<span><a href="https://owasp.org/Top10/2025/A02_2025-Security_Misconfiguration/">OWASP_2025_A02</a></span> 
+				</li>
+			</ul>
+		</td>
+	</tr>
+	<tr>
+		<th scope="row">Alert description</th>
+		<td> 
+<p>The Anti-MIME-Sniffing header X-Content-Type-Options was not set to &#39;nosniff&#39;. This allows older versions of Internet Explorer and Chrome to perform MIME-sniffing on the response body, potentially causing the response body to be interpreted and displayed as a content type other than the declared content type. Current (early 2014) and legacy versions of Firefox will use the declared content type (if one is set), rather than performing MIME-sniffing.</p>
+ </td>
+	</tr>
+	<tr>
+		<th scope="row">Other info</th>
+		<td> 
+<p>This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.</p>
+
+<p>At &quot;High&quot; threshold this scan rule will not alert on client or server error responses.</p>
+ </td>
+	</tr>
+	<tr>
+		<th scope="row">Request</th>
+		<td><details open="open">
+				<summary>Request line and header section (365 bytes)</summary>
+				
+				<pre><code>GET http://127.0.0.1:8000/static/dashboard/css/dashboard.css?v=6 HTTP/1.1
+host: 127.0.0.1:8000
+user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+pragma: no-cache
+cache-control: no-cache
+referer: http://127.0.0.1:8000/login/?next=/
+Cookie: csrftoken=HrriHK62f6zUwDl6BEkM6UJZpPsSkhYr
+
+</code></pre>
+				
+				
+			</details> <details class="request-body" open="open">
+				<summary>Request body (0 bytes)</summary>
+				
+				<pre><code></code></pre>
+				
+				
+			</details></td>
+	</tr>
+	<tr>
+		<th scope="row">Response</th>
+		<td><details open="open">
+				<summary>Status line and header section (243 bytes)</summary>
+				
+				<pre><code>HTTP/1.1 200 OK
+Date: Thu, 19 Nov 2026 12:09:56 GMT
+Server: WSGIServer/0.2 CPython/3.14.6
+Content-Type: text/css
+Content-Length: 21338
+Content-Disposition: inline; filename=&quot;dashboard.css&quot;
+Last-Modified: Wed, 04 Nov 2026 12:19:54 GMT
+
+</code></pre>
+				
+				
+			</details> <details class="response-body">
+				<summary>Response body (21338 bytes)</summary>
+				
+				<pre><code>/* =========================================================
+   DEEPPREDICT — DESIGN SYSTEM
+   Professional Observability &amp; Infrastructure Dark Theme
+   ========================================================= */
+
+/* 1. Design Tokens */
+:root {
+  color-scheme: dark;
+
+  /* Surfaces &amp; Canvas */
+  --bg: #0B1220;             /* Main page canvas */
+  --sidebar-bg: #0E1725;     /* Navigation and header surfaces */
+  --surface: #111C2E;        /* KPI cards, panels, tables */
+  --surface-raised: #172337; /* Hover, header cells and selected surfaces */
+  --surface-hover: #1D2C43;  /* Row / card hover surface */
+
+  /* Borders &amp; Separators */
+  --line: #202E44;           /* Subtle separators */
+  --line-light: #2C3E5A;     /* Elevated dividers &amp; inputs */
+
+  /* Primary Brand / Action */
+  --primary: #4F83F1;        /* Primary actions, active nav, links */
+  --primary-hover: #3B72E2;
+  --primary-soft: rgba(79, 131, 241, 0.12);
+
+  /* Status &amp; Severity Semantics */
+  --healthy: #32B782;        /* Healthy infrastructure status */
+  --healthy-soft: rgba(50, 183, 130, 0.12);
+
+  --warning: #E6AA45;        /* Warning / medium risk */
+  --warning-soft: rgba(230, 170, 69, 0.12);
+
+  --critical: #E36B72;       /* High risk / critical anomaly */
+  --critical-soft: rgba(227, 107, 114, 0.12);
+  --critical-dark: #7F1D1D;
+
+  --purple: #A78BFA;         /* Anomaly indicator */
+  --purple-soft: rgba(167, 139, 250, 0.12);
+
+  /* Typography &amp; Text */
+  --text: #F1F5F9;           /* Titles, primary values */
+  --text-secondary: #CBD5E1; /* Subheadings, table cell text */
+  --muted: #8E9FB5;          /* Labels, timestamps, descriptions */
+
+  /* Radii &amp; Shadows */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+
+  --transition: 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 2. Global Reset &amp; Base Typography */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+a:hover {
+  color: #7AA2FF;
+  text-decoration: underline;
+}
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+h1, h2, h3, h4, p {
+  margin-top: 0;
+}
+
+h1 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+h2 {
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.2px;
+  color: var(--text);
+  margin: 28px 0 14px;
+}
+
+h3 {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+code, .font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+code {
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  color: #93C5FD;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+}
+
+/* 3. Global Application Shell (Fixed-width sidebar + main area) */
+.dp-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.dp-sidebar {
+  width: 250px;
+  min-width: 250px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 14px 18px;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.dp-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 8px;
+  margin-bottom: 32px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.dp-brand:hover {
+  text-decoration: none;
+}
+
+.dp-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+}
+
+.dp-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.dp-brand-name {
+  font-size: 16px;
+  font-weight: 750;
+  letter-spacing: -0.3px;
+  color: #FFFFFF;
+  line-height: 1.2;
+}
+
+.dp-brand-tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  color: #64748B;
+  text-transform: uppercase;
+}
+
+.dp-nav-section-title {
+  padding: 0 10px;
+  margin-bottom: 8px;
+  color: #556984;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.dp-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dp-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  position: relative;
+  transition: background var(--transition), color var(--transition);
+}
+
+.dp-nav-link:hover {
+  background: var(--surface-raised);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.dp-nav-link.is-active {
+  background: var(--primary-soft);
+  color: #93C5FD;
+  font-weight: 600;
+}
+
+.dp-nav-link.is-active::before {
+  content: &quot;&quot;;
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  background: var(--primary);
+  border-radius: 0 3px 3px 0;
+}
+
+.dp-nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.dp-sidebar-bottom {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.dp-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px 12px;
+}
+
+.dp-avatar {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #1B2B44;
+  border: 1px solid var(--line-light);
+  color: #93C5FD;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dp-user-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dp-user-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.dp-user-role {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.dp-logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  transition: all var(--transition);
+}
+
+.dp-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #FCA5A5;
+}
+
+/* 4. Top Header */
+.dp-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dp-topbar {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 32px;
+  background: var(--sidebar-bg);
+  border-bottom: 1px solid var(--line);
+}
+
+.dp-topbar-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: #556984;
+  margin-bottom: 3px;
+}
+
+.dp-topbar-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--text);
+}
+
+.dp-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dp-workspace-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.dp-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--healthy);
+}
+
+/* 5. Main Content Area */
+.dp-content {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 26px 32px 48px;
+}
+
+.dp-auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: var(--bg);
+}
+
+.note {
+  margin: 4px 0 16px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.note.demo {
+  padding: 10px 14px;
+  border: 1px solid rgba(230, 170, 69, 0.35);
+  border-radius: var(--radius-md);
+  background: var(--warning-soft);
+  color: #FCD34D;
+  font-size: 12px;
+  margin: 16px 0;
+}
+
+/* 6. Primary KPI Cards Grid (4 Columns, Equal Height, Icon Badges) */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin: 18px 0 24px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  min-height: 124px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition), border-color var(--transition), background var(--transition), box-shadow var(--transition);
+}
+
+a.card:hover {
+  text-decoration: none;
+  transform: translateY(-2px);
+  background: var(--surface-raised);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+  color: var(--text);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.card .label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.card-icon-badge {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.icon-total {
+  background: rgba(79, 131, 241, 0.12);
+  color: #7AA2FF;
+}
+
+.icon-healthy {
+  background: var(--healthy-soft);
+  color: var(--healthy);
+}
+
+.icon-warning {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.icon-critical {
+  background: var(--critical-soft);
+  color: var(--critical);
+}
+
+.card .value {
+  color: #F8FAFC;
+  font-size: 32px;
+  font-weight: 750;
+  line-height: 1.15;
+  letter-spacing: -0.8px;
+  margin: 6px 0 4px;
+}
+
+.card .value.small {
+  font-size: 15px;
+  letter-spacing: normal;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.card .sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* Subtle top status line for primary cards */
+.card.status-healthy::after {
+  content: &quot;&quot;;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--healthy);
+}
+
+.card.status-warning::after {
+  content: &quot;&quot;;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--warning);
+}
+
+.card.status-high_risk::after {
+  content: &quot;&quot;;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--critical);
+}
+
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot-healthy { background: var(--healthy); }
+.dot-warning { background: var(--warning); }
+.dot-critical { background: var(--critical); }
+
+/* 7. Analytical &amp; Diagnostic Grid (Health Distribution &amp; Coverage) */
+.overview-analytics-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.analytics-panel {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.panel-header-compact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.panel-header-compact h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -0.2px;
+}
+
+.panel-tag {
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+
+/* Proportional Segmented Progress Bar */
+.distribution-bar {
+  display: flex;
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #0E1829;
+  border: 1px solid var(--line);
+  margin-bottom: 16px;
+}
+
+.dist-seg {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.seg-healthy { background: var(--healthy); }
+.seg-warning { background: var(--warning); }
+.seg-critical { background: var(--critical); }
+
+.distribution-legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+}
+
+.legend-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-name {
+  color: var(--text-secondary);
+}
+
+.legend-count {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.legend-pct {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* Signals list */
+.signals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.signal-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 9px 12px;
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+}
+
+.signal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.signal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.signal-desc {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.signal-stat {
+  font-size: 15px;
+  font-weight: 750;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.signal-stat .unit {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* 8. Prioritized Drives Table &amp; Attention Section */
+.section-title-bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 32px 0 12px;
+  flex-wrap: wrap;
+}
+
+.section-title-bar h2 {
+  margin: 0;
+}
+
+.section-hint {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.panel {
+  margin: 20px 0;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin: 12px 0 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+th, td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+th {
+  background: var(--surface-raised);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+td {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.table-prioritized tbody tr {
+  transition: background var(--transition);
+}
+
+.table-prioritized tbody tr:hover {
+  background: var(--surface-hover);
+}
+
+.table-prioritized tbody tr.row-critical {
+  background: rgba(227, 107, 114, 0.04);
+}
+
+.table-prioritized tbody tr.row-critical:hover {
+  background: rgba(227, 107, 114, 0.09);
+}
+
+tr:last-child td {
+  border-bottom: 0;
+}
+
+.rank-num {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.drive-link code {
+  color: #93C5FD;
+  font-weight: 600;
+  transition: color var(--transition);
+}
+
+.drive-link:hover code {
+  color: #BFDBFE;
+  border-color: #3B82F6;
+}
+
+/* Micro Score Meter */
+.score-meter-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.score-num {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  min-width: 32px;
+}
+
+.meter-track {
+  width: 80px;
+  height: 6px;
+  border-radius: 999px;
+  background: #0E1829;
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.fill-healthy { background: var(--healthy); }
+.fill-warning { background: var(--warning); }
+.fill-critical { background: var(--critical); }
+
+/* 9. Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.badge.status-healthy,
+.badge.normal {
+  border-color: rgba(50, 183, 130, 0.3);
+  background: var(--healthy-soft);
+  color: #6EE7B7;
+}
+
+.badge.status-warning,
+.badge.risk-medium {
+  border-color: rgba(230, 170, 69, 0.3);
+  background: var(--warning-soft);
+  color: #FCD34D;
+}
+
+.badge.status-high_risk,
+.badge.risk-high {
+  border-color: rgba(227, 107, 114, 0.35);
+  background: var(--critical-soft);
+  color: #FCA5A5;
+}
+
+.badge.risk-critical {
+  border-color: rgba(227, 107, 114, 0.6);
+  background: var(--critical-dark);
+  color: #FFFFFF;
+}
+
+.badge.risk-low {
+  border-color: rgba(50, 183, 130, 0.3);
+  background: var(--healthy-soft);
+  color: #6EE7B7;
+}
+
+.badge.anomalous {
+  border-color: rgba(167, 139, 250, 0.35);
+  background: var(--purple-soft);
+  color: #DDD6FE;
+}
+
+.badge.muted {
+  border-color: var(--line);
+  background: var(--surface-raised);
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* 10. Filters &amp; Controls */
+.filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0 20px;
+}
+
+input, select, textarea {
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid var(--line-light);
+  border-radius: var(--radius-md);
+  outline: none;
+  background: var(--surface-raised);
+  color: var(--text);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+input::placeholder, textarea::placeholder {
+  color: #556984;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+select option {
+  background: var(--surface);
+  color: var(--text);
+}
+
+button.primary, .button-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 8px 16px;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-md);
+  background: var(--primary);
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all var(--transition);
+}
+
+button.primary:hover, .button-primary:hover {
+  border-color: var(--primary-hover);
+  background: var(--primary-hover);
+  color: #FFFFFF;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 8px 14px;
+  border: 1px solid var(--line-light);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  transition: all var(--transition);
+}
+
+.btn-secondary:hover {
+  background: var(--surface-raised);
+  color: var(--text);
+  text-decoration: none;
+}
+
+button:focus-visible, a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* 11. Pagination */
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 24px 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.pager a {
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.pager a:hover {
+  background: var(--surface-raised);
+  border-color: var(--primary);
+  text-decoration: none;
+}
+
+/* 12. Charts container */
+.chart-box {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  margin: 14px 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+/* 13. Login box */
+.login-box {
+  width: 100%;
+  max-width: 400px;
+  padding: 36px 32px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+}
+
+.login-box h1 {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.login-box form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.login-box label {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: -6px;
+}
+
+.login-box input {
+  width: 100%;
+}
+
+.login-box button {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.error {
+  padding: 10px 14px;
+  border: 1px solid rgba(227, 107, 114, 0.4);
+  border-radius: var(--radius-md);
+  background: var(--critical-soft);
+  color: #FCA5A5;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+/* 14. Responsive Layout &amp; Media Queries */
+@media (max-width: 1199px) {
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .overview-analytics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dp-sidebar {
+    width: 68px;
+    min-width: 68px;
+    padding: 18px 8px;
+  }
+
+  .dp-brand {
+    justify-content: center;
+    padding: 0;
+    margin-bottom: 28px;
+  }
+
+  .dp-brand-text,
+  .dp-nav-section-title,
+  .dp-nav-link span:not(.dp-nav-icon),
+  .dp-user-info,
+  .dp-logout-btn span:not(.dp-nav-icon) {
+    display: none;
+  }
+
+  .dp-nav-link {
+    justify-content: center;
+    padding: 10px;
+  }
+
+  .dp-user {
+    justify-content: center;
+    padding: 4px 0 10px;
+  }
+
+  .dp-logout-btn {
+    justify-content: center;
+    padding: 8px;
+  }
+
+  .dp-topbar {
+    padding: 12px 18px;
+  }
+
+  .dp-content {
+    padding: 20px 16px;
+  }
+
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .hide-sm {
+    display: none;
+  }
+
+  .chart-box {
+    height: 260px;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filters input, .filters select, .filters button, .btn-secondary {
+    width: 100%;
+  }
+
+  .distribution-legend {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+</code></pre>
+				
+				
+			</details></td>
+	</tr>
+	<tr>
+		<th scope="row">Parameter</th>
+		<td><pre><code>x-content-type-options</code></pre></td>
+	</tr>
+	
+	
+	<tr>
+		<th scope="row">Solution</th>
+		<td> 
+<p>Ensure that the application/web server sets the Content-Type header appropriately, and that it sets the X-Content-Type-Options header to &#39;nosniff&#39; for all web pages.</p>
+
+<p>If possible, ensure that the end user uses a standards-compliant and modern web browser that does not perform MIME-sniffing at all, or that can be directed by the web application/web server to not perform MIME-sniffing.</p>
+ </td>
+	</tr>
+</table>
+
+											</details></li>
+									</ol>
+								</li>
+								
+							</ol>
+						</li>
+						
+					</ol>
+				</li>
+				
+				
+				  
+				 
+				
+				
+				<li id="alerts--risk-0-confidence-3">
+					<h3>
+						<span>Risk</span>=<span
+							class="risk-level">Pour information</span>, <span>Confidence</span>=<span
+							class="confidence-level">Haut</span> <span>(1)</span>
+					</h3>
+					<ol>
+						
+						<li class="alerts--site-li">
+							<h4>
+								<span class="site">http://127.0.0.1:8000</span> <span>(1)</span>
+							</h4>
+							<ol>
+								
+								<li>
+									<h5>
+										<a
+											href="#alert-type-4">Authentication Request Identified</a> <span>(1)</span>
+									</h5>
+									<ol>
+										<li><details>
+												<summary>
+													<span class="request-method-n-url">POST http://127.0.0.1:8000/login/?next=/</span>
+												</summary>
+												
+<table class="alerts-table">
+	<tr>
+		<th scope="row">Alert tags</th>
+		<td>
+			<ul class="alert-tags-list">
+				
+			</ul>
+		</td>
+	</tr>
+	<tr>
+		<th scope="row">Alert description</th>
+		<td> 
+<p>The given request has been identified as an authentication request. The &#39;Other Info&#39; field contains a set of key=value lines which identify any relevant fields. If the request is in a context which has an Authentication Method set to &quot;Auto-Detect&quot; then this rule will change the authentication to match the request identified.</p>
+ </td>
+	</tr>
+	<tr>
+		<th scope="row">Other info</th>
+		<td> 
+<p>userParam=username</p>
+
+<p>userValue=ZAP</p>
+
+<p>passwordParam=password</p>
+
+<p>referer=http://127.0.0.1:8000/login/?next=/</p>
+ </td>
+	</tr>
+	<tr>
+		<th scope="row">Request</th>
+		<td><details open="open">
+				<summary>Request line and header section (411 bytes)</summary>
+				
+				<pre><code>POST http://127.0.0.1:8000/login/?next=/ HTTP/1.1
+host: 127.0.0.1:8000
+user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+pragma: no-cache
+cache-control: no-cache
+content-type: application/x-www-form-urlencoded
+referer: http://127.0.0.1:8000/login/?next=/
+content-length: 119
+Cookie: csrftoken=HrriHK62f6zUwDl6BEkM6UJZpPsSkhYr
+
+</code></pre>
+				
+				
+			</details> <details class="request-body" open="open">
+				<summary>Request body (119 bytes)</summary>
+				
+				<pre><code>csrfmiddlewaretoken=G45MvzKGYhuun0C2rg3KtYmBfb7yB2rXdlmU29Gy3dTeJtNYSKdmpIVquQpgL9fe&amp;username=ZAP&amp;password=ZAP&amp;next=%2F</code></pre>
+				
+				
+			</details></td>
+	</tr>
+	<tr>
+		<th scope="row">Response</th>
+		<td><details open="open">
+				<summary>Status line and header section (553 bytes)</summary>
+				
+				<pre><code>HTTP/1.1 200 OK
+Date: Thu, 19 Nov 2026 12:09:57 GMT
+Server: WSGIServer/0.2 CPython/3.14.6
+Content-Type: text/html; charset=utf-8
+Expires: Thu, 19 Nov 2026 12:09:57 GMT
+Cache-Control: max-age=0, no-cache, no-store, must-revalidate, private
+Vary: Cookie, origin
+X-Frame-Options: DENY
+Content-Length: 1519
+X-Content-Type-Options: nosniff
+Referrer-Policy: same-origin
+Cross-Origin-Opener-Policy: same-origin
+Set-Cookie: csrftoken=HrriHK62f6zUwDl6BEkM6UJZpPsSkhYr; expires=Thu, 18 Nov 2027 12:09:57 GMT; Max-Age=31449600; Path=/; SameSite=Lax
+
+</code></pre>
+				
+				
+			</details> <details class="response-body" open="open">
+				<summary>Response body (1519 bytes)</summary>
+				
+				<pre><code>&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;utf-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+  &lt;title&gt;Log in &amp;middot; DeepPredict&lt;/title&gt;
+  &lt;link rel=&quot;stylesheet&quot; href=&quot;/static/dashboard/css/dashboard.css?v=6&quot;&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  
+  &lt;main class=&quot;dp-auth-page&quot;&gt;
+  
+
+    
+&lt;section class=&quot;login-box&quot; aria-labelledby=&quot;login-title&quot;&gt;
+  &lt;div style=&quot;display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 24px;&quot;&gt;
+    &lt;span class=&quot;dp-brand-mark&quot;&gt;D&lt;/span&gt;
+    &lt;span class=&quot;dp-brand-name&quot; style=&quot;font-size: 19px;&quot;&gt;DeepPredict&lt;/span&gt;
+  &lt;/div&gt;
+
+  &lt;h1 id=&quot;login-title&quot; style=&quot;font-size: 18px; margin-bottom: 16px;&quot;&gt;Sign in to your workspace&lt;/h1&gt;
+
+  
+    &lt;p class=&quot;error&quot; role=&quot;alert&quot;&gt;Wrong username or password.&lt;/p&gt;
+  
+
+  &lt;form method=&quot;post&quot; novalidate&gt;
+    &lt;input type=&quot;hidden&quot; name=&quot;csrfmiddlewaretoken&quot; value=&quot;ueRYBLmjIojapopKQkBObfi5X6xPOD9u1v868libNkIULRAGhOLq7ZRUcLPxYKXL&quot;&gt;
+    &lt;div&gt;
+      &lt;label for=&quot;id_username&quot;&gt;Username&lt;/label&gt;
+      &lt;input id=&quot;id_username&quot; name=&quot;username&quot; type=&quot;text&quot; autocomplete=&quot;username&quot; required autofocus placeholder=&quot;Enter your username&quot;&gt;
+    &lt;/div&gt;
+
+    &lt;div&gt;
+      &lt;label for=&quot;id_password&quot;&gt;Password&lt;/label&gt;
+      &lt;input id=&quot;id_password&quot; name=&quot;password&quot; type=&quot;password&quot; autocomplete=&quot;current-password&quot; required placeholder=&quot;Enter your password&quot;&gt;
+    &lt;/div&gt;
+
+    &lt;input type=&quot;hidden&quot; name=&quot;next&quot; value=&quot;/&quot;&gt;
+    &lt;button type=&quot;submit&quot; class=&quot;primary&quot;&gt;Sign In&lt;/button&gt;
+  &lt;/form&gt;
+&lt;/section&gt;
+
+
+  
+  &lt;/main&gt;
+  
+
+  
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+				
+				
+			</details></td>
+	</tr>
+	<tr>
+		<th scope="row">Parameter</th>
+		<td><pre><code>username</code></pre></td>
+	</tr>
+	
+	<tr>
+		<th scope="row">Evidence</th>
+		<td><pre><code>password</code></pre></td>
+	</tr>
+	<tr>
+		<th scope="row">Solution</th>
+		<td> 
+<p>This is an informational alert rather than a vulnerability and so there is nothing to fix.</p>
+ </td>
+	</tr>
+</table>
+
+											</details></li>
+									</ol>
+								</li>
+								
+							</ol>
+						</li>
+						
+					</ol>
+				</li>
+				
+				<li id="alerts--risk-0-confidence-2">
+					<h3>
+						<span>Risk</span>=<span
+							class="risk-level">Pour information</span>, <span>Confidence</span>=<span
+							class="confidence-level">Moyen</span> <span>(1)</span>
+					</h3>
+					<ol>
+						
+						<li class="alerts--site-li">
+							<h4>
+								<span class="site">http://127.0.0.1:8000</span> <span>(1)</span>
+							</h4>
+							<ol>
+								
+								<li>
+									<h5>
+										<a
+											href="#alert-type-5">Session Management Response Identified</a> <span>(1)</span>
+									</h5>
+									<ol>
+										<li><details>
+												<summary>
+													<span class="request-method-n-url">GET http://127.0.0.1:8000/login/?next=/</span>
+												</summary>
+												
+<table class="alerts-table">
+	<tr>
+		<th scope="row">Alert tags</th>
+		<td>
+			<ul class="alert-tags-list">
+				
+			</ul>
+		</td>
+	</tr>
+	<tr>
+		<th scope="row">Alert description</th>
+		<td> 
+<p>The given response has been identified as containing a session management token. The &#39;Other Info&#39; field contains a set of header tokens that can be used in the Header Based Session Management Method. If the request is in a context which has a Session Management Method set to &quot;Auto-Detect&quot; then this rule will change the session management to use the tokens identified.</p>
+ </td>
+	</tr>
+	<tr>
+		<th scope="row">Other info</th>
+		<td> 
+<p>cookie:csrftoken</p>
+ </td>
+	</tr>
+	<tr>
+		<th scope="row">Request</th>
+		<td><details open="open">
+				<summary>Request line and header section (274 bytes)</summary>
+				
+				<pre><code>GET http://127.0.0.1:8000/login/?next=/ HTTP/1.1
+host: 127.0.0.1:8000
+user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+pragma: no-cache
+cache-control: no-cache
+referer: http://127.0.0.1:8000
+
+</code></pre>
+				
+				
+			</details> <details class="request-body" open="open">
+				<summary>Request body (0 bytes)</summary>
+				
+				<pre><code></code></pre>
+				
+				
+			</details></td>
+	</tr>
+	<tr>
+		<th scope="row">Response</th>
+		<td><details open="open">
+				<summary>Status line and header section (553 bytes)</summary>
+				
+				<pre><code>HTTP/1.1 200 OK
+Date: Thu, 19 Nov 2026 12:09:56 GMT
+Server: WSGIServer/0.2 CPython/3.14.6
+Content-Type: text/html; charset=utf-8
+Expires: Thu, 19 Nov 2026 12:09:56 GMT
+Cache-Control: max-age=0, no-cache, no-store, must-revalidate, private
+Vary: Cookie, origin
+X-Frame-Options: DENY
+Content-Length: 1450
+X-Content-Type-Options: nosniff
+Referrer-Policy: same-origin
+Cross-Origin-Opener-Policy: same-origin
+Set-Cookie: csrftoken=HrriHK62f6zUwDl6BEkM6UJZpPsSkhYr; expires=Thu, 18 Nov 2027 12:09:56 GMT; Max-Age=31449600; Path=/; SameSite=Lax
+
+</code></pre>
+				
+				
+			</details> <details class="response-body" open="open">
+				<summary>Response body (1450 bytes)</summary>
+				
+				<pre><code>&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;utf-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+  &lt;title&gt;Log in &amp;middot; DeepPredict&lt;/title&gt;
+  &lt;link rel=&quot;stylesheet&quot; href=&quot;/static/dashboard/css/dashboard.css?v=6&quot;&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  
+  &lt;main class=&quot;dp-auth-page&quot;&gt;
+  
+
+    
+&lt;section class=&quot;login-box&quot; aria-labelledby=&quot;login-title&quot;&gt;
+  &lt;div style=&quot;display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 24px;&quot;&gt;
+    &lt;span class=&quot;dp-brand-mark&quot;&gt;D&lt;/span&gt;
+    &lt;span class=&quot;dp-brand-name&quot; style=&quot;font-size: 19px;&quot;&gt;DeepPredict&lt;/span&gt;
+  &lt;/div&gt;
+
+  &lt;h1 id=&quot;login-title&quot; style=&quot;font-size: 18px; margin-bottom: 16px;&quot;&gt;Sign in to your workspace&lt;/h1&gt;
+
+  
+
+  &lt;form method=&quot;post&quot; novalidate&gt;
+    &lt;input type=&quot;hidden&quot; name=&quot;csrfmiddlewaretoken&quot; value=&quot;G45MvzKGYhuun0C2rg3KtYmBfb7yB2rXdlmU29Gy3dTeJtNYSKdmpIVquQpgL9fe&quot;&gt;
+    &lt;div&gt;
+      &lt;label for=&quot;id_username&quot;&gt;Username&lt;/label&gt;
+      &lt;input id=&quot;id_username&quot; name=&quot;username&quot; type=&quot;text&quot; autocomplete=&quot;username&quot; required autofocus placeholder=&quot;Enter your username&quot;&gt;
+    &lt;/div&gt;
+
+    &lt;div&gt;
+      &lt;label for=&quot;id_password&quot;&gt;Password&lt;/label&gt;
+      &lt;input id=&quot;id_password&quot; name=&quot;password&quot; type=&quot;password&quot; autocomplete=&quot;current-password&quot; required placeholder=&quot;Enter your password&quot;&gt;
+    &lt;/div&gt;
+
+    &lt;input type=&quot;hidden&quot; name=&quot;next&quot; value=&quot;/&quot;&gt;
+    &lt;button type=&quot;submit&quot; class=&quot;primary&quot;&gt;Sign In&lt;/button&gt;
+  &lt;/form&gt;
+&lt;/section&gt;
+
+
+  
+  &lt;/main&gt;
+  
+
+  
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+				
+				
+			</details></td>
+	</tr>
+	<tr>
+		<th scope="row">Parameter</th>
+		<td><pre><code>csrftoken</code></pre></td>
+	</tr>
+	
+	<tr>
+		<th scope="row">Evidence</th>
+		<td><pre><code>csrftoken</code></pre></td>
+	</tr>
+	<tr>
+		<th scope="row">Solution</th>
+		<td> 
+<p>This is an informational alert rather than a vulnerability and so there is nothing to fix.</p>
+ </td>
+	</tr>
+</table>
+
+											</details></li>
+									</ol>
+								</li>
+								
+							</ol>
+						</li>
+						
+					</ol>
+				</li>
+				
+				
+				  
+			</ol>
+		</section>
+
+		<section id="appendix" class="appendix">
+			<h2>Appendix</h2>
+
+			<section id="alert-types" class="alert-types">
+				<h3>Alert Types</h3>
+				<p class="alert-types-intro">This section contains additional information on the types of alerts in the report.</p>
+				<ol>
+					<li
+						id="alert-type-0">
+						<h4>Content Security Policy (CSP) Header Not Set</h4>
+						<table class="alert-types-table">
+							<tr>
+								<th scope="row">Source</th>
+								<td>
+									
+									   <span>raised by a passive scanner</span> <span>(<a
+										href="https://www.zaproxy.org/docs/alerts/10038/">Content Security Policy (CSP) Header Not Set</a>)
+									</span>   
+								</td>
+							</tr>
+							<tr>
+								<th scope="row">CWE ID</th>
+								<td><a
+									href="https://cwe.mitre.org/data/definitions/693.html">693</a></td>
+							</tr>
+							<tr>
+								<th scope="row">WASC ID</th>
+								<td>15</td>
+							</tr>
+							<tr>
+								<th scope="row">Reference</th>
+								<td>
+									<ol>
+										<li><a
+											href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP">https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP</a></li>
+										<li><a
+											href="https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html</a></li>
+										<li><a
+											href="https://www.w3.org/TR/CSP/">https://www.w3.org/TR/CSP/</a></li>
+										<li><a
+											href="https://w3c.github.io/webappsec-csp/">https://w3c.github.io/webappsec-csp/</a></li>
+										<li><a
+											href="https://web.dev/articles/csp">https://web.dev/articles/csp</a></li>
+										<li><a
+											href="https://caniuse.com/#feat=contentsecuritypolicy">https://caniuse.com/#feat=contentsecuritypolicy</a></li>
+										<li><a
+											href="https://content-security-policy.com/">https://content-security-policy.com/</a></li>
+									</ol>
+								</td>
+							</tr>
+						</table>
+					</li>
+					<li
+						id="alert-type-1">
+						<h4>Cookie No HttpOnly Flag</h4>
+						<table class="alert-types-table">
+							<tr>
+								<th scope="row">Source</th>
+								<td>
+									
+									   <span>raised by a passive scanner</span> <span>(<a
+										href="https://www.zaproxy.org/docs/alerts/10010/">Cookie No HttpOnly Flag</a>)
+									</span>   
+								</td>
+							</tr>
+							<tr>
+								<th scope="row">CWE ID</th>
+								<td><a
+									href="https://cwe.mitre.org/data/definitions/1004.html">1004</a></td>
+							</tr>
+							<tr>
+								<th scope="row">WASC ID</th>
+								<td>13</td>
+							</tr>
+							<tr>
+								<th scope="row">Reference</th>
+								<td>
+									<ol>
+										<li><a
+											href="https://owasp.org/www-community/HttpOnly">https://owasp.org/www-community/HttpOnly</a></li>
+									</ol>
+								</td>
+							</tr>
+						</table>
+					</li>
+					<li
+						id="alert-type-2">
+						<h4>Server Leaks Version Information via &quot;Server&quot; HTTP Response Header Field</h4>
+						<table class="alert-types-table">
+							<tr>
+								<th scope="row">Source</th>
+								<td>
+									
+									   <span>raised by a passive scanner</span> <span>(<a
+										href="https://www.zaproxy.org/docs/alerts/10036/">HTTP Server Response Header</a>)
+									</span>   
+								</td>
+							</tr>
+							<tr>
+								<th scope="row">CWE ID</th>
+								<td><a
+									href="https://cwe.mitre.org/data/definitions/497.html">497</a></td>
+							</tr>
+							<tr>
+								<th scope="row">WASC ID</th>
+								<td>13</td>
+							</tr>
+							<tr>
+								<th scope="row">Reference</th>
+								<td>
+									<ol>
+										<li><a
+											href="https://httpd.apache.org/docs/current/mod/core.html#servertokens">https://httpd.apache.org/docs/current/mod/core.html#servertokens</a></li>
+										<li><a
+											href="https://learn.microsoft.com/en-us/previous-versions/msp-n-p/ff648552(v=pandp.10)">https://learn.microsoft.com/en-us/previous-versions/msp-n-p/ff648552(v=pandp.10)</a></li>
+										<li><a
+											href="https://www.troyhunt.com/shhh-dont-let-your-response-headers/">https://www.troyhunt.com/shhh-dont-let-your-response-headers/</a></li>
+									</ol>
+								</td>
+							</tr>
+						</table>
+					</li>
+					<li
+						id="alert-type-3">
+						<h4>X-Content-Type-Options Header Missing</h4>
+						<table class="alert-types-table">
+							<tr>
+								<th scope="row">Source</th>
+								<td>
+									
+									   <span>raised by a passive scanner</span> <span>(<a
+										href="https://www.zaproxy.org/docs/alerts/10021/">X-Content-Type-Options Header Missing</a>)
+									</span>   
+								</td>
+							</tr>
+							<tr>
+								<th scope="row">CWE ID</th>
+								<td><a
+									href="https://cwe.mitre.org/data/definitions/693.html">693</a></td>
+							</tr>
+							<tr>
+								<th scope="row">WASC ID</th>
+								<td>15</td>
+							</tr>
+							<tr>
+								<th scope="row">Reference</th>
+								<td>
+									<ol>
+										<li><a
+											href="https://learn.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/compatibility/gg622941(v=vs.85)">https://learn.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/compatibility/gg622941(v=vs.85)</a></li>
+										<li><a
+											href="https://owasp.org/www-community/Security_Headers">https://owasp.org/www-community/Security_Headers</a></li>
+									</ol>
+								</td>
+							</tr>
+						</table>
+					</li>
+					<li
+						id="alert-type-4">
+						<h4>Authentication Request Identified</h4>
+						<table class="alert-types-table">
+							<tr>
+								<th scope="row">Source</th>
+								<td>
+									
+									   <span>raised by a passive scanner</span> <span>(<a
+										href="https://www.zaproxy.org/docs/alerts/10111/">Authentication Request Identified</a>)
+									</span>   
+								</td>
+							</tr>
+							
+							
+							<tr>
+								<th scope="row">Reference</th>
+								<td>
+									<ol>
+										<li><a
+											href="https://www.zaproxy.org/docs/desktop/addons/authentication-helper/auth-req-id/">https://www.zaproxy.org/docs/desktop/addons/authentication-helper/auth-req-id/</a></li>
+									</ol>
+								</td>
+							</tr>
+						</table>
+					</li>
+					<li
+						id="alert-type-5">
+						<h4>Session Management Response Identified</h4>
+						<table class="alert-types-table">
+							<tr>
+								<th scope="row">Source</th>
+								<td>
+									
+									   <span>raised by a passive scanner</span> <span>(<a
+										href="https://www.zaproxy.org/docs/alerts/10112/">Session Management Response Identified</a>)
+									</span>   
+								</td>
+							</tr>
+							
+							
+							<tr>
+								<th scope="row">Reference</th>
+								<td>
+									<ol>
+										<li><a
+											href="https://www.zaproxy.org/docs/desktop/addons/authentication-helper/session-mgmt-id/">https://www.zaproxy.org/docs/desktop/addons/authentication-helper/session-mgmt-id/</a></li>
+									</ol>
+								</td>
+							</tr>
+						</table>
+					</li>
+				</ol>
+			</section>
+		</section>
+		 
+	</main>
+</body>
+</html>
+
+
+

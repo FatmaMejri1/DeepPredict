@@ -1,0 +1,14 @@
+﻿CSRF_COOKIE_HTTPONLY Validation
+Date: 2026-11-19
+Configuration: CSRF_COOKIE_HTTPONLY = True
+Django check: Passed (0 issues)
+Browser cookie: csrftoken has HttpOnly flag
+Manual login: Successful
+Locust: 2 users (IT_PRO and OPERATOR), 15 seconds
+Total requests: 43
+Failures: 0
+Failure rate: 0%
+Average response time: 64 ms
+P95 response time: 72 ms
+Authentication: Both users authenticated successfully
+Conclusion: No regression observed after enabling HttpOnly.

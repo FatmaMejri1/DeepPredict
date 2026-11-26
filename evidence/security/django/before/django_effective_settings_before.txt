@@ -1,0 +1,9 @@
+﻿17 objects imported automatically (use -v 2 for details).
+
+DEBUG: True
+ALLOWED_HOSTS: ['localhost', '127.0.0.1']
+MAILER BACKEND: django.core.mail.backends.console.EmailBackend
+SESSION_COOKIE_SECURE: False
+CSRF_COOKIE_SECURE: False
+SECURE_SSL_REDIRECT: False
+SECURE_HSTS_SECONDS: 0

@@ -1,0 +1,92 @@
+============================= Test Execution Report: AI Service =============================
+Component: DeepPredict AI Service (FastAPI + PyTorch)
+Test Runner: pytest 8.x + pytest-cov
+Timestamp: 2026-11-13T13:46:29
+Platform: Windows (Python 3.12 / venv312)
+
+SUMMARY:
+- Total Tests: 58
+- Passed: 58
+- Failed: 0
+- Errors: 0
+- Skipped: 0
+- Execution Time: 14.975 seconds
+- Overall Result: SUCCESS (100% Passed)
+
+TEST SUITES:
+1. tests.test_api (18 tests) - All PASSED
+   - test_health_endpoint
+   - test_validate_endpoint_with_valid_data
+   - test_predict_endpoint_with_valid_data
+   - test_predict_rejects_unsupported_drive_model
+   - test_validate_rejects_empty_readings
+   - test_validate_without_drive_model_returns_warning
+   - test_predict_rejects_missing_drive_model
+   - test_predict_rejects_missing_smart_feature
+   - test_predict_rejects_invalid_date
+   - test_predict_rejects_insufficient_history
+   - test_predict_supports_explicit_column_mapping
+   - test_predict_rejects_empty_readings
+   - test_validate_converts_value_error_to_http_422
+   - test_predict_rejects_invalid_date_after_validation
+   - test_predict_rejects_none_prediction
+   - test_predict_converts_value_error_to_http_422
+   - test_predict_handles_missing_smart_values_through_pipeline
+   - test_predict_rejects_unfillable_date_gap
+
+2. tests.test_compatibility (12 tests) - All PASSED
+   - test_normalize_name
+   - test_normalize_columns_supports_date_alias
+   - test_normalize_columns_rejects_missing_date
+   - test_normalize_columns_rejects_missing_mapping_source
+   - test_normalize_columns_rejects_unsupported_target
+   - test_normalize_columns_rejects_existing_target
+   - test_normalize_columns_rejects_ambiguous_aliases
+   - test_normalize_columns_allows_missing_features_when_optional
+   - test_normalize_columns_rejects_missing_required_features
+   - test_normalize_columns_supports_explicit_date_mapping
+   - test_normalize_columns_keeps_canonical_column_with_explicit_mapping
+   - test_normalize_columns_supports_feature_without_smart_pattern
+
+3. tests.test_inference (4 tests) - All PASSED
+   - test_risk_level_thresholds[medium-MEDIUM]
+   - test_risk_level_thresholds[high-HIGH]
+   - test_risk_level_thresholds[critical-CRITICAL]
+   - test_predict_returns_none_with_insufficient_history
+
+4. tests.test_preprocess (12 tests) - All PASSED
+   - test_fill_drive_creates_daily_calendar
+   - test_fill_drive_keeps_long_gaps_as_nan
+   - test_make_windows_for_drive_without_failure
+   - test_make_windows_for_drive_with_failure
+   - test_window_for_inference_with_valid_history
+   - test_window_for_inference_with_insufficient_history
+   - test_to_log_space_transforms_values
+   - test_make_windows_skips_windows_with_unfillable_gaps
+   - test_make_windows_skips_windows_after_failure_date
+   - test_window_for_inference_rejects_unfillable_gap
+   - test_to_log_space_clips_negative_values
+   - test_make_windows_for_failure_beyond_horizon
+
+5. tests.test_validation (12 tests) - All PASSED
+   - test_validate_empty_dataframe
+   - test_validate_rejects_invalid_column_mapping
+   - test_validate_rejects_multiple_drive_models
+   - test_validate_warns_when_drive_model_values_are_empty
+   - test_validate_rejects_unsupported_drive_model
+   - test_validate_rejects_dataset_with_no_valid_dates
+   - test_validate_warns_when_readings_are_not_chronological
+   - test_validate_rejects_duplicate_daily_readings
+   - test_validate_rejects_non_numeric_smart_values
+   - test_validate_rejects_negative_smart_values
+   - test_validate_warns_about_missing_smart_values
+   - test_validate_accepts_drive_model_column_alias
+
+CODE COVERAGE:
+- Total Statements: 361
+- Covered Statements: 361
+- Statement Coverage: 100.0%
+- Total Branches: 120
+- Covered Branches: 120
+- Branch Coverage: 100.0%
+- XML Report: evidence/code_quality/tests/ai_service_coverage.xml

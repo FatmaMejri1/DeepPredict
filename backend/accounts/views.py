@@ -6,6 +6,8 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+from audit.models import ActionType
+from audit.services import log_action
 from .models import Role, User
 from .permissions import IsSysAdmin
 from .serializers import (
@@ -85,6 +87,14 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        log_action(
+            action=ActionType.CREATE,
+            user=request.user,
+            resource_type="User",
+            resource_id=str(user.pk),
+            details={"username": user.username, "role": user.role, "action": "create"},
+            request=request,
+        )
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
@@ -93,6 +103,14 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        log_action(
+            action=ActionType.UPDATE,
+            user=request.user,
+            resource_type="User",
+            resource_id=str(user.pk),
+            details={"username": user.username, "role": user.role, "action": "update"},
+            request=request,
+        )
         return Response(UserSerializer(user).data)
 
     @action(detail=True, methods=["post"])
@@ -105,6 +123,14 @@ class UserViewSet(viewsets.ModelViewSet):
             )
         user.is_active = False
         user.save(update_fields=["is_active"])
+        log_action(
+            action=ActionType.UPDATE,
+            user=request.user,
+            resource_type="User",
+            resource_id=str(user.pk),
+            details={"username": user.username, "action": "deactivate"},
+            request=request,
+        )
         return Response(UserSerializer(user).data)
 
     @action(detail=True, methods=["post"])
@@ -112,6 +138,14 @@ class UserViewSet(viewsets.ModelViewSet):
         user = self.get_object()
         user.is_active = True
         user.save(update_fields=["is_active"])
+        log_action(
+            action=ActionType.UPDATE,
+            user=request.user,
+            resource_type="User",
+            resource_id=str(user.pk),
+            details={"username": user.username, "action": "activate"},
+            request=request,
+        )
         return Response(UserSerializer(user).data)
 
     @action(detail=True, methods=["post"], url_path="set-password")
@@ -123,4 +157,12 @@ class UserViewSet(viewsets.ModelViewSet):
         check_password_strength(password, user)
         user.set_password(password)
         user.save(update_fields=["password"])
+        log_action(
+            action=ActionType.UPDATE,
+            user=request.user,
+            resource_type="User",
+            resource_id=str(user.pk),
+            details={"username": user.username, "action": "set_password"},
+            request=request,
+        )
         return Response({"detail": "Password updated."})

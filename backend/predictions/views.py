@@ -1,3 +1,4 @@
-from django.shortcuts import render
-
-# Create your views here.
+"""
+Views for predictions application.
+Inference and scoring workflows are executed via PredictionService and dashboard views.
+"""

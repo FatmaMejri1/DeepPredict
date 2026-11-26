@@ -1,3 +1,4 @@
+
 import json
 from pathlib import Path
 
@@ -12,12 +13,26 @@ class Predictor:
     def __init__(self, artifact_dir):
         d = Path(artifact_dir)
         self.cfg = json.loads((d / "config.json").read_text(encoding="utf-8"))
-        n = len(self.cfg["feature_cols"]) + 1          # SMART columns + gap_filled
+        n = len(self.cfg["feature_cols"]) + 1  # SMART columns + gap_filled
+
         self.risk = RiskNet(n)
-        self.risk.load_state_dict(torch.load(d / "risk_gru.pt", map_location="cpu"))
+        self.risk.load_state_dict(
+            torch.load(
+                d / "risk_gru.pt",
+                map_location="cpu",
+                weights_only=True,
+            )
+        )
         self.risk.eval()
+
         self.ae = LSTMAE(n)
-        self.ae.load_state_dict(torch.load(d / "anomaly_lstmae.pt", map_location="cpu"))
+        self.ae.load_state_dict(
+            torch.load(
+                d / "anomaly_lstmae.pt",
+                map_location="cpu",
+                weights_only=True,
+            )
+        )
         self.ae.eval()
 
     def risk_level(self, score):
@@ -32,15 +47,22 @@ class Predictor:
 
     def predict(self, df_drive):
         # df_drive: columns `date` plus the raw smart_*_raw columns, one row per reported day.
-        out = window_for_inference(df_drive, self.cfg["feature_cols"],
-                                   self.cfg["window"], self.cfg["max_fill"])
+        out = window_for_inference(
+            df_drive,
+            self.cfg["feature_cols"],
+            self.cfg["window"],
+            self.cfg["max_fill"],
+        )
         if out is None:
-            return None                                  # not enough valid history
+            return None  # not enough valid history
+
         w, start, end = out
         x = torch.from_numpy(to_log_space(w)[None])
+
         with torch.no_grad():
             risk = float(torch.sigmoid(self.risk(x))[0])
             anomaly = float(self.ae.score(x)[0])
+
         return {
             "risk_score": risk,
             "risk_level": self.risk_level(risk),
