@@ -4,7 +4,9 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView as SimpleJWTTokenRefreshView
+from django.db import transaction
+from django.contrib.auth.signals import user_logged_out
 
 from audit.models import ActionType
 from audit.services import log_action
@@ -17,6 +19,8 @@ from .serializers import (
     UserCreateSerializer,
     UserSerializer,
     UserUpdateSerializer,
+    AccountTokenRefreshSerializer,
+    LogoutSerializer,
     check_password_strength,
 )
 
@@ -27,6 +31,24 @@ class LoginView(TokenObtainPairView):
     serializer_class = LoginSerializer
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = "login"
+
+
+class AccountTokenRefreshView(SimpleJWTTokenRefreshView):
+    serializer_class = AccountTokenRefreshSerializer
+
+
+class LogoutView(generics.GenericAPIView):
+    """Blacklist this authenticated user's refresh token."""
+
+    serializer_class = LogoutSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.validated_data["token"].blacklist()
+        user_logged_out.send(sender=request.user.__class__, request=request, user=request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class MeView(generics.RetrieveAPIView):
@@ -48,8 +70,17 @@ class ChangePasswordView(generics.GenericAPIView):
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        request.user.set_password(serializer.validated_data["new_password"])
-        request.user.save(update_fields=["password"])
+        with transaction.atomic():
+            request.user.set_password(serializer.validated_data["new_password"])
+            request.user.save(update_fields=["password"])
+            log_action(
+                action=ActionType.UPDATE,
+                user=request.user,
+                resource_type="User",
+                resource_id=str(request.user.pk),
+                details={"action": "change_own_password"},
+                request=request,
+            )
         return Response({"detail": "Password updated."})
 
 
@@ -86,15 +117,16 @@ class UserViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        log_action(
-            action=ActionType.CREATE,
-            user=request.user,
-            resource_type="User",
-            resource_id=str(user.pk),
-            details={"username": user.username, "role": user.role, "action": "create"},
-            request=request,
-        )
+        with transaction.atomic():
+            user = serializer.save()
+            log_action(
+                action=ActionType.CREATE,
+                user=request.user,
+                resource_type="User",
+                resource_id=str(user.pk),
+                details={"username": user.username, "role": user.role, "action": "create"},
+                request=request,
+            )
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
@@ -102,15 +134,16 @@ class UserViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        log_action(
-            action=ActionType.UPDATE,
-            user=request.user,
-            resource_type="User",
-            resource_id=str(user.pk),
-            details={"username": user.username, "role": user.role, "action": "update"},
-            request=request,
-        )
+        with transaction.atomic():
+            user = serializer.save()
+            log_action(
+                action=ActionType.UPDATE,
+                user=request.user,
+                resource_type="User",
+                resource_id=str(user.pk),
+                details={"username": user.username, "role": user.role, "action": "update"},
+                request=request,
+            )
         return Response(UserSerializer(user).data)
 
     @action(detail=True, methods=["post"])
@@ -121,31 +154,33 @@ class UserViewSet(viewsets.ModelViewSet):
                 {"detail": "You cannot deactivate your own account."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        user.is_active = False
-        user.save(update_fields=["is_active"])
-        log_action(
-            action=ActionType.UPDATE,
-            user=request.user,
-            resource_type="User",
-            resource_id=str(user.pk),
-            details={"username": user.username, "action": "deactivate"},
-            request=request,
-        )
+        with transaction.atomic():
+            user.is_active = False
+            user.save(update_fields=["is_active"])
+            log_action(
+                action=ActionType.UPDATE,
+                user=request.user,
+                resource_type="User",
+                resource_id=str(user.pk),
+                details={"username": user.username, "action": "deactivate"},
+                request=request,
+            )
         return Response(UserSerializer(user).data)
 
     @action(detail=True, methods=["post"])
     def activate(self, request, pk=None):
         user = self.get_object()
-        user.is_active = True
-        user.save(update_fields=["is_active"])
-        log_action(
-            action=ActionType.UPDATE,
-            user=request.user,
-            resource_type="User",
-            resource_id=str(user.pk),
-            details={"username": user.username, "action": "activate"},
-            request=request,
-        )
+        with transaction.atomic():
+            user.is_active = True
+            user.save(update_fields=["is_active"])
+            log_action(
+                action=ActionType.UPDATE,
+                user=request.user,
+                resource_type="User",
+                resource_id=str(user.pk),
+                details={"username": user.username, "action": "activate"},
+                request=request,
+            )
         return Response(UserSerializer(user).data)
 
     @action(detail=True, methods=["post"], url_path="set-password")
@@ -155,14 +190,15 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         password = serializer.validated_data["password"]
         check_password_strength(password, user)
-        user.set_password(password)
-        user.save(update_fields=["password"])
-        log_action(
-            action=ActionType.UPDATE,
-            user=request.user,
-            resource_type="User",
-            resource_id=str(user.pk),
-            details={"username": user.username, "action": "set_password"},
-            request=request,
-        )
+        with transaction.atomic():
+            user.set_password(password)
+            user.save(update_fields=["password"])
+            log_action(
+                action=ActionType.UPDATE,
+                user=request.user,
+                resource_type="User",
+                resource_id=str(user.pk),
+                details={"username": user.username, "action": "set_password"},
+                request=request,
+            )
         return Response({"detail": "Password updated."})

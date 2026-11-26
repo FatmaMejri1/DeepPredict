@@ -45,19 +45,21 @@ ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    'config.admin.DeepPredictAdminConfig',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "drf_spectacular",
     "drf_spectacular_sidecar",
     "accounts",
     "ml_models",
     "predictions",
+    "alerts",
     "monitoring",
     "infrastructure",
     "dashboard",
@@ -108,6 +110,7 @@ if os.getenv("DB_ENGINE", "sqlite") == "postgres":
             "PASSWORD": os.environ["POSTGRES_PASSWORD"],
             "HOST": os.environ["POSTGRES_HOST"],
             "PORT": os.environ["POSTGRES_PORT"],
+            "TEST": {"NAME": "deeppredict_test"},
         }
     }
 else:
@@ -115,8 +118,11 @@ else:
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
+            "TEST": {"NAME": BASE_DIR / "test_db.sqlite3"},
         }
     }
+
+TEST_RUNNER = "config.test_runner.IsolatedDiscoverRunner"
 
 
 # Password validation
@@ -198,6 +204,7 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": False,
+    "CHECK_REVOKE_TOKEN": True,
     "UPDATE_LAST_LOGIN": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }

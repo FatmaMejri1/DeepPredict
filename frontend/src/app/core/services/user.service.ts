@@ -17,7 +17,7 @@ export class UserService {
     );
   }
 
-  getUser(id: number): Observable<UserListItem> {
+  getUser(id: string): Observable<UserListItem> {
     return this.http.get<UserListItem>(`${environment.apiUrl}/users/${id}/`);
   }
 
@@ -25,19 +25,19 @@ export class UserService {
     return this.http.post<UserListItem>(`${environment.apiUrl}/users/`, payload);
   }
 
-  updateUser(id: number, payload: UpdateUserPayload): Observable<UserListItem> {
+  updateUser(id: string, payload: UpdateUserPayload): Observable<UserListItem> {
     return this.http.patch<UserListItem>(`${environment.apiUrl}/users/${id}/`, payload);
   }
 
-  activateUser(id: number): Observable<any> {
+  activateUser(id: string): Observable<any> {
     return this.http.post(`${environment.apiUrl}/users/${id}/activate/`, {});
   }
 
-  deactivateUser(id: number): Observable<any> {
+  deactivateUser(id: string): Observable<any> {
     return this.http.post(`${environment.apiUrl}/users/${id}/deactivate/`, {});
   }
 
-  setPassword(id: number, password: string): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/users/${id}/set_password/`, { password });
+  setPassword(id: string, password: string): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/users/${id}/set-password/`, { password });
   }
 }

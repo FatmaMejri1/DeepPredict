@@ -14,9 +14,9 @@ export interface MLModelCard {
   training_dataset: string;
   trained_at: string | null;
   is_active: boolean;
-  thresholds: Record<string, number>;
+  thresholds: Record<string, number | null>;
   config: Record<string, any>;
   protocol?: string;
   rows: ModelEvaluationRow[];
-  evaluation_metrics?: Record<string, any>;
+  evaluation_metrics?: Record<string, any> | null;
 }

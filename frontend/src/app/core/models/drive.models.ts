@@ -11,6 +11,7 @@ export interface Drive {
   risk_score: number | null;
   scored_until: string | null;
   is_anomalous: boolean;
+  anomaly_evaluated: boolean;
   last_reading: string | null;
 }
 
@@ -71,4 +72,57 @@ export interface DrivePredictionHistoryItem {
     model_type: string;
     architecture: string;
   };
+}
+
+export type DriveTimelineEventType =
+  | 'TELEMETRY_READING'
+  | 'PREDICTION'
+  | 'ALERT_OPENED'
+  | 'ALERT_ACKNOWLEDGED'
+  | 'ALERT_RESOLVED'
+  | 'RESOURCE_AUDIT';
+
+export interface DriveTimelineEvent {
+  id: string;
+  event_type: DriveTimelineEventType;
+  occurred_at: string;
+  resource: Pick<Drive, 'id' | 'name' | 'identifier'>;
+  actor: string | null;
+  data: {
+    source?: string;
+    prediction_type?: 'FAILURE_PREDICTION' | 'ANOMALY_DETECTION';
+    score?: number;
+    risk_level?: string | null;
+    is_anomalous?: boolean | null;
+    horizon_days?: number | null;
+    window_start?: string;
+    window_end?: string;
+    model?: {
+      name: string;
+      version: string;
+      model_type: string;
+      architecture: string;
+    };
+    alert_id?: string;
+    alert_type?: 'FAILURE_RISK' | 'ANOMALY';
+    severity?: 'HIGH' | 'CRITICAL';
+    resolution_source?: 'AUTO' | 'USER';
+    action?: string;
+    description?: string;
+  };
+}
+
+export interface DriveTimelinePage {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: DriveTimelineEvent[];
+}
+
+export interface DriveTimelineQuery {
+  page: number;
+  page_size: number;
+  type?: DriveTimelineEventType | '';
+  from?: string;
+  to?: string;
 }

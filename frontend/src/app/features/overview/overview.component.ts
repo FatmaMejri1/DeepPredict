@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { interval } from 'rxjs';
@@ -10,14 +11,14 @@ import { AuthService } from '../../core/services/auth.service';
 @Component({
   selector: 'app-overview',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="overview-page">
       <div class="page-header">
         <div>
           <h1 class="page-title">Fleet Health Overview</h1>
           <p class="page-subtitle">
-            Predictive AI monitoring across production storage infrastructure.
+            Predictive monitoring for drives registered in DeepPredict.
             <span *ngIf="summary?.data_until" class="telemetry-timestamp">
               Telemetry recorded up to: <strong>{{ summary?.data_until | date:'mediumDate' }}</strong>
             </span>
@@ -48,6 +49,40 @@ import { AuthService } from '../../core/services/auth.service';
           </div>
         </div>
       </div>
+
+      <section class="card dashboard-filters" aria-label="Dashboard filters">
+        <div class="filter-control">
+          <label for="dashboard-status-filter">Drive status</label>
+          <select id="dashboard-status-filter" class="form-select" [(ngModel)]="filters.status" (ngModelChange)="onFiltersChanged()">
+            <option value="">All statuses</option>
+            <option value="HEALTHY">Healthy</option>
+            <option value="WARNING">Warning</option>
+            <option value="HIGH_RISK">High risk</option>
+          </select>
+        </div>
+        <div class="filter-control">
+          <label for="dashboard-risk-filter">Failure risk</label>
+          <select id="dashboard-risk-filter" class="form-select" [(ngModel)]="filters.risk_level" (ngModelChange)="onFiltersChanged()">
+            <option value="">All risk levels</option>
+            <option value="CRITICAL">Critical</option>
+            <option value="HIGH">High</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="LOW">Low</option>
+            <option value="NOT_SCORED">Not scored</option>
+          </select>
+        </div>
+        <div class="filter-control">
+          <label for="dashboard-anomaly-filter">Anomaly</label>
+          <select id="dashboard-anomaly-filter" class="form-select" [(ngModel)]="filters.is_anomalous" (ngModelChange)="onFiltersChanged()">
+            <option value="">All assessments</option>
+            <option value="true">Anomalous</option>
+            <option value="false">Normal or not evaluated</option>
+          </select>
+        </div>
+        <button *ngIf="hasActiveFilters" type="button" class="btn btn-secondary btn-sm clear-filters" (click)="clearFilters()">
+          Clear filters
+        </button>
+      </section>
 
       <div *ngIf="summaryError" class="dashboard-state error-state" role="alert">
         <span>{{ summaryError }}</span>
@@ -97,9 +132,13 @@ import { AuthService } from '../../core/services/auth.service';
         </div>
       </div>
 
-      <div *ngIf="summary?.total === 0" class="dashboard-state empty-state">
+      <div *ngIf="summary?.total === 0 && !hasActiveFilters" class="dashboard-state empty-state">
         <strong>No drives are registered yet.</strong>
         <span>Import SMART telemetry to start monitoring your fleet.</span>
+      </div>
+      <div *ngIf="summary?.total === 0 && hasActiveFilters" class="dashboard-state empty-state" role="status">
+        <strong>No drives match the selected filters.</strong>
+        <span>Clear one or more filters to see other drives.</span>
       </div>
 
       <!-- Fleet Distribution Bar -->
@@ -136,7 +175,7 @@ import { AuthService } from '../../core/services/auth.service';
           <button type="button" class="text-button" (click)="refreshDashboard()">Retry</button>
         </div>
         <div *ngIf="!activityLoading && !activityError && !activity.length" class="activity-state empty-activity">
-          No prediction runs have been recorded yet.
+          {{ hasActiveFilters ? 'No prediction runs match the selected filters.' : 'No prediction runs have been recorded yet.' }}
         </div>
 
         <ol *ngIf="activity.length" class="activity-list">
@@ -214,11 +253,14 @@ import { AuthService } from '../../core/services/auth.service';
                   <span class="text-muted" *ngIf="drive.risk_score === null">—</span>
                 </td>
                 <td>
-                  <span *ngIf="drive.is_anomalous" class="badge badge-anomaly">
+                  <span *ngIf="drive.anomaly_evaluated && drive.is_anomalous" class="badge badge-anomaly">
                     ANOMALOUS
                   </span>
-                  <span *ngIf="!drive.is_anomalous" class="badge badge-neutral">
+                  <span *ngIf="drive.anomaly_evaluated && !drive.is_anomalous" class="badge badge-neutral">
                     NORMAL
+                  </span>
+                  <span *ngIf="!drive.anomaly_evaluated" class="badge badge-neutral">
+                    NOT EVALUATED
                   </span>
                 </td>
                 <td>
@@ -229,7 +271,7 @@ import { AuthService } from '../../core/services/auth.service';
               </tr>
               <tr *ngIf="summary?.total === 0">
                 <td colspan="8" class="text-center py-4 text-muted">
-                  No drives are available yet. Add drives or import telemetry to populate this overview.
+                  {{ hasActiveFilters ? 'No drives match the selected filters.' : 'No drives are available yet. Add drives or import telemetry to populate this overview.' }}
                 </td>
               </tr>
               <tr *ngIf="summary && summary.total > 0 && !summary.top_critical.length">
@@ -286,6 +328,35 @@ import { AuthService } from '../../core/services/auth.service';
       justify-content: flex-end;
       flex-wrap: wrap;
       gap: 0.75rem;
+    }
+
+    .dashboard-filters {
+      display: flex;
+      align-items: end;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+      padding: 0.85rem 1rem;
+
+      .filter-control {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        min-width: 150px;
+      }
+
+      label {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+
+      select {
+        min-width: 150px;
+        padding: 0.45rem 0.65rem;
+        font-size: 0.8rem;
+      }
+
+      .clear-filters { margin-left: auto; }
     }
 
     .refresh-control {
@@ -581,6 +652,12 @@ export class OverviewComponent implements OnInit {
   activityLoading = true;
   activityError = '';
   lastUpdatedAt: Date | null = null;
+  filters = { status: '', risk_level: '', is_anomalous: '' };
+  private requestSequence = 0;
+
+  get hasActiveFilters(): boolean {
+    return Boolean(this.filters.status || this.filters.risk_level || this.filters.is_anomalous);
+  }
 
   ngOnInit(): void {
     this.refreshDashboard();
@@ -589,9 +666,10 @@ export class OverviewComponent implements OnInit {
       .subscribe(() => this.refreshDashboard());
   }
 
-  refreshDashboard(): void {
-    if (this.refreshing) return;
+  refreshDashboard(force = false): void {
+    if (this.refreshing && !force) return;
 
+    const requestSequence = ++this.requestSequence;
     this.refreshing = true;
     this.loading = !this.summary;
     this.activityLoading = !this.activity.length;
@@ -606,8 +684,10 @@ export class OverviewComponent implements OnInit {
       }
     };
 
-    this.dashboardService.getSummary().subscribe({
+    const filters = { ...this.filters };
+    this.dashboardService.getSummary(filters).subscribe({
       next: (data) => {
+        if (requestSequence !== this.requestSequence) return;
         this.summary = data;
         this.loading = false;
         this.lastUpdatedAt = new Date();
@@ -615,6 +695,7 @@ export class OverviewComponent implements OnInit {
         this.changeDetector.markForCheck();
       },
       error: () => {
+        if (requestSequence !== this.requestSequence) return;
         this.loading = false;
         this.summaryError = 'Dashboard statistics could not be loaded.';
         finishRequest();
@@ -622,20 +703,34 @@ export class OverviewComponent implements OnInit {
       },
     });
 
-    this.dashboardService.getRecentActivity().subscribe({
+    this.dashboardService.getRecentActivity(filters).subscribe({
       next: (data) => {
+        if (requestSequence !== this.requestSequence) return;
         this.activity = data.results;
         this.activityLoading = false;
         finishRequest();
         this.changeDetector.markForCheck();
       },
       error: () => {
+        if (requestSequence !== this.requestSequence) return;
         this.activityLoading = false;
         this.activityError = 'Recent activity could not be loaded.';
         finishRequest();
         this.changeDetector.markForCheck();
       },
     });
+  }
+
+  onFiltersChanged(): void {
+    this.summary = null;
+    this.activity = [];
+    this.lastUpdatedAt = null;
+    this.refreshDashboard(true);
+  }
+
+  clearFilters(): void {
+    this.filters = { status: '', risk_level: '', is_anomalous: '' };
+    this.onFiltersChanged();
   }
 
   percent(val: number): string {

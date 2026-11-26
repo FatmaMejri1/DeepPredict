@@ -1,8 +1,4 @@
-import logging
-from django.contrib.auth import get_user_model
 from .models import ActionType, AuditLog
-
-logger = logging.getLogger("audit")
 
 
 def get_client_ip(request):
@@ -50,16 +46,15 @@ def log_action(
     else:
         user_obj = None
 
-    try:
-        return AuditLog.objects.create(
-            user=user_obj,
-            username=username,
-            action=action,
-            resource_type=resource_type,
-            resource_id=str(resource_id) if resource_id is not None else "",
-            ip_address=ip_address,
-            details=details,
-        )
-    except Exception as e:
-        logger.error(f"Failed to write audit log entry: {e}", exc_info=True)
-        return None
+    # Callers that require a durable audit trail must be able to fail their
+    # surrounding transaction when this insert fails. Best-effort callers,
+    # such as authentication signals, handle exceptions at their boundary.
+    return AuditLog.objects.create(
+        user=user_obj,
+        username=username,
+        action=action,
+        resource_type=resource_type,
+        resource_id=str(resource_id) if resource_id is not None else "",
+        ip_address=ip_address,
+        details=details,
+    )

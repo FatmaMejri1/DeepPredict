@@ -15,12 +15,29 @@ from rest_framework.views import APIView
 from accounts.permissions import IsITProOrSysAdmin
 from audit.models import ActionType
 from audit.services import log_action
-from dashboard.queries import chart_data, disks_with_latest, model_cards, summary_data
+from dashboard.queries import (
+    chart_data,
+    disks_with_latest,
+    filter_drive_queryset,
+    model_cards,
+    parse_drive_filters,
+    summary_data,
+)
 from dashboard.services import inference_service_health
+from dashboard.timeline import (
+    TimelineInputError,
+    TimelinePageNotFound,
+    build_drive_timeline,
+)
 from infrastructure.models import Resource, ResourceType, Status
+from infrastructure.operational import operational_resources
 from ml_models.models import MLModelVersion, ModelType
 from monitoring.models import Metric
-from predictions.inference_client import InferenceError, NotEnoughHistory
+from predictions.inference_client import (
+    DriveModelCompatibilityError,
+    InferenceError,
+    NotEnoughHistory,
+)
 from predictions.models import Prediction
 from predictions.services import predict_resource
 
@@ -45,7 +62,8 @@ class DashboardSummaryAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        data = summary_data()
+        filters = parse_drive_filters(request.query_params)
+        data = summary_data(filters)
         top_critical = []
         for disk in data["top"]:
             top_critical.append({
@@ -60,6 +78,7 @@ class DashboardSummaryAPIView(APIView):
                 "risk_score": disk.risk_score,
                 "scored_until": disk.scored_until.isoformat() if disk.scored_until else None,
                 "is_anomalous": disk.is_anomalous if disk.is_anomalous is not None else False,
+                "anomaly_evaluated": disk.anomaly_evaluated,
                 "last_reading": disk.last_reading.isoformat() if disk.last_reading else None,
             })
 
@@ -79,11 +98,17 @@ class DashboardActivityAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        recent_predictions = (
-            Prediction.objects.filter(resource__resource_type=ResourceType.DISK)
-            .select_related("resource", "model_version")
-            .order_by("-created_at", "-pk")[:10]
-        )
+        filters = parse_drive_filters(request.query_params)
+        operational_drive_ids = operational_resources(
+            Resource.objects.filter(resource_type=ResourceType.DISK, is_active=True)
+        ).values("pk")
+        recent_predictions = Prediction.objects.filter(resource_id__in=operational_drive_ids)
+        if filters:
+            matching_drives = filter_drive_queryset(disks_with_latest(), filters).values("pk")
+            recent_predictions = recent_predictions.filter(resource_id__in=matching_drives)
+        recent_predictions = recent_predictions.select_related(
+            "resource", "model_version"
+        ).order_by("-created_at", "-pk")[:10]
         results = []
         for prediction in recent_predictions:
             if prediction.model_version.model_type == ModelType.FAILURE_PREDICTION:
@@ -129,21 +154,7 @@ class DriveListAPIView(APIView):
                 | Q(attributes__datacenter__icontains=search)
             )
 
-        status_filter = request.query_params.get("status", "").strip().upper()
-        if status_filter in ("HEALTHY", "WARNING", "HIGH_RISK"):
-            queryset = queryset.filter(status=status_filter)
-
-        risk_level = request.query_params.get("risk_level", "").strip().upper()
-        if risk_level in ("LOW", "MEDIUM", "HIGH", "CRITICAL"):
-            queryset = queryset.filter(risk_level=risk_level)
-        elif risk_level == "NOT_SCORED":
-            queryset = queryset.filter(risk_level__isnull=True)
-
-        is_anomalous = request.query_params.get("is_anomalous", "").strip().lower()
-        if is_anomalous in ("true", "1"):
-            queryset = queryset.filter(is_anomalous=True)
-        elif is_anomalous in ("false", "0"):
-            queryset = queryset.filter(Q(is_anomalous=False) | Q(is_anomalous__isnull=True))
+        queryset = filter_drive_queryset(queryset, parse_drive_filters(request.query_params))
 
         ordering = request.query_params.get("ordering", "-risk_score").strip()
         if ordering == "-risk_score":
@@ -173,6 +184,7 @@ class DriveListAPIView(APIView):
                 "risk_score": disk.risk_score,
                 "scored_until": disk.scored_until.isoformat() if disk.scored_until else None,
                 "is_anomalous": disk.is_anomalous if disk.is_anomalous is not None else False,
+                "anomaly_evaluated": disk.anomaly_evaluated,
                 "last_reading": disk.last_reading.isoformat() if disk.last_reading else None,
             })
 
@@ -202,6 +214,7 @@ class DriveDetailAPIView(APIView):
             "risk_score": disk.risk_score,
             "scored_until": disk.scored_until.isoformat() if disk.scored_until else None,
             "is_anomalous": disk.is_anomalous if disk.is_anomalous is not None else False,
+            "anomaly_evaluated": disk.anomaly_evaluated,
             "last_reading": disk.last_reading.isoformat() if disk.last_reading else None,
             "created_at": disk.created_at.isoformat(),
             "updated_at": disk.updated_at.isoformat(),
@@ -213,7 +226,7 @@ class DriveTelemetryAPIView(APIView):
 
     def get(self, request, pk):
         try:
-            resource = Resource.objects.get(pk=pk, is_active=True)
+            resource = disks_with_latest().get(pk=pk)
         except Resource.DoesNotExist:
             raise NotFound("Drive not found.")
 
@@ -260,6 +273,46 @@ class DrivePredictionHistoryAPIView(APIView):
             }
             for prediction in history
         ])
+
+
+class DriveTimelineAPIView(APIView):
+    """Chronological, read-only operational events for one active disk."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            resource = disks_with_latest().get(pk=pk)
+        except Resource.DoesNotExist:
+            raise NotFound("Drive not found.")
+
+        try:
+            result = build_drive_timeline(resource, request.query_params)
+        except TimelineInputError as exc:
+            return Response(
+                {"detail": exc.detail, "field": exc.field},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except TimelinePageNotFound:
+            raise NotFound("Invalid page.")
+
+        page = result["page"]
+        page_size = result["page_size"]
+        count = result["count"]
+        params = request.query_params.copy()
+
+        def page_url(page_number):
+            params["page"] = str(page_number)
+            return request.build_absolute_uri(f"{request.path}?{params.urlencode()}")
+
+        next_url = page_url(page + 1) if page * page_size < count else None
+        previous_url = page_url(page - 1) if page > 1 else None
+        return Response({
+            "count": count,
+            "next": next_url,
+            "previous": previous_url,
+            "results": result["results"],
+        })
 
 
 class MLModelListAPIView(APIView):
@@ -414,6 +467,29 @@ class TelemetryUploadAPIView(APIView):
             return Response({"error": "No readings provided."}, status=status.HTTP_400_BAD_REQUEST)
 
         default_resource_id = request.data.get("resource_id")
+        serials = {
+            r.get("serial_number") or r.get("identifier")
+            for r in readings
+            if r.get("serial_number") or r.get("identifier")
+        }
+        matching_resources = Resource.objects.filter(identifier__in=serials)
+        operational_ids = operational_resources(matching_resources).values("pk")
+        if matching_resources.exclude(pk__in=operational_ids).exists():
+            return Response(
+                {"error": "This drive identifier is reserved by training/demo data and cannot be mixed with operational telemetry."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        if default_resource_id:
+            resource_exists = Resource.objects.filter(pk=default_resource_id).exists()
+            resource_is_operational = operational_resources(
+                Resource.objects.filter(pk=default_resource_id)
+            ).exists()
+            if resource_exists and not resource_is_operational:
+                return Response(
+                    {"error": "Training/demo resources cannot receive operational telemetry."},
+                    status=status.HTTP_409_CONFLICT,
+                )
+
         created_count = 0
         updated_drives = set()
 
@@ -422,20 +498,29 @@ class TelemetryUploadAPIView(APIView):
                 serial = r.get("serial_number") or r.get("identifier")
                 res = None
                 if serial:
-                    res = Resource.objects.filter(identifier=serial).first()
+                    res = operational_resources(
+                        Resource.objects.filter(identifier=serial)
+                    ).first()
                     if not res:
                         res = Resource.objects.create(
                             name=f"Drive {serial}",
                             identifier=serial,
                             resource_type=ResourceType.DISK,
                             attributes={
-                                "model": r.get("model", "ST12000NM0007"),
                                 "vendor": r.get("vendor", "Seagate"),
                                 "serial_number": serial,
                                 "datacenter": r.get("datacenter", "DC-1"),
                             },
                             created_by=request.user,
                         )
+                    model_metadata = r.get("model")
+                    if isinstance(model_metadata, str) and model_metadata.strip():
+                        attributes = dict(res.attributes or {})
+                        if not attributes.get("drive_model"):
+                            attributes["drive_model"] = model_metadata
+                            attributes.setdefault("model", model_metadata)
+                            res.attributes = attributes
+                            res.save(update_fields=["attributes"])
                 elif default_resource_id:
                     res = Resource.objects.filter(pk=default_resource_id).first()
 
@@ -484,6 +569,12 @@ class TelemetryUploadAPIView(APIView):
 
 
 class PredictionRunAPIView(APIView):
+    """Run predictions and report full, partial, or complete failure explicitly.
+
+    Full success returns 200, partial success returns 207, and complete failure
+    returns 422 for non-actionable inputs, 502 for inference errors, or 500 for
+    unexpected persistence/application errors.
+    """
     permission_classes = [IsITProOrSysAdmin]
 
     def post(self, request):
@@ -491,18 +582,27 @@ class PredictionRunAPIView(APIView):
         targets = []
         if resource_id:
             try:
-                targets = [Resource.objects.get(pk=resource_id, is_active=True)]
+                targets = [disks_with_latest().get(pk=resource_id)]
             except Resource.DoesNotExist:
                 raise NotFound("Drive not found.")
         else:
-            targets = list(Resource.objects.filter(resource_type=ResourceType.DISK, is_active=True))
+            targets = list(disks_with_latest())
 
         scored = []
         errors = []
 
+        if not targets:
+            return Response({
+                "outcome": "complete_failure",
+                "message": "No active drives were available for prediction.",
+                "scored_count": 0,
+                "results": [],
+                "errors": [],
+            }, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
         for target in targets:
             try:
-                preds = predict_resource(target)
+                preds = predict_resource(target, actor=request.user, request=request, source="api")
                 if preds:
                     risk_pred, ano_pred = preds
                     scored.append({
@@ -515,13 +615,62 @@ class PredictionRunAPIView(APIView):
                         "window_start": risk_pred.window_start.isoformat(),
                         "window_end": risk_pred.window_end.isoformat(),
                     })
-            except (InferenceError, NotEnoughHistory) as exc:
-                errors.append({"resource_id": str(target.id), "identifier": target.identifier, "error": str(exc)})
-            except Exception as exc:
-                errors.append({"resource_id": str(target.id), "identifier": target.identifier, "error": f"Internal error: {exc}"})
+                else:
+                    errors.append({
+                        "resource_id": str(target.id),
+                        "identifier": target.identifier,
+                        "code": "no_new_prediction",
+                        "error": "No new prediction was generated (no telemetry or already up to date).",
+                    })
+            except DriveModelCompatibilityError:
+                errors.append({
+                    "resource_id": str(target.id),
+                    "identifier": target.identifier,
+                    "code": "model_compatibility_error",
+                    "error": "Drive model compatibility could not be verified; prediction was not performed.",
+                })
+            except NotEnoughHistory:
+                errors.append({
+                    "resource_id": str(target.id),
+                    "identifier": target.identifier,
+                    "code": "insufficient_history",
+                    "error": "Insufficient valid telemetry history for prediction.",
+                })
+            except InferenceError:
+                errors.append({
+                    "resource_id": str(target.id),
+                    "identifier": target.identifier,
+                    "code": "inference_error",
+                    "error": "The AI prediction could not be completed.",
+                })
+            except Exception:
+                # Do not expose exception text, which may contain database or
+                # service internals. The prediction transaction has rolled back.
+                errors.append({
+                    "resource_id": str(target.id),
+                    "identifier": target.identifier,
+                    "code": "internal_error",
+                    "error": "Prediction could not be completed due to an internal error.",
+                })
 
-        return Response({
+        response_data = {
             "scored_count": len(scored),
             "results": scored,
             "errors": errors,
-        })
+        }
+        if scored and errors:
+            response_data["outcome"] = "partial_success"
+            return Response(response_data, status=status.HTTP_207_MULTI_STATUS)
+        if scored:
+            response_data["outcome"] = "full_success"
+            return Response(response_data, status=status.HTTP_200_OK)
+
+        response_data["outcome"] = "complete_failure"
+        response_data["message"] = "No drives were successfully scored. Review the per-drive results and try again."
+        if any(error["code"] == "internal_error" for error in errors):
+            response_status = status.HTTP_500_INTERNAL_SERVER_ERROR
+        elif any(error["code"] == "inference_error" for error in errors):
+            response_status = status.HTTP_502_BAD_GATEWAY
+        else:
+            response_status = status.HTTP_422_UNPROCESSABLE_ENTITY
+        return Response(response_data, status=response_status)

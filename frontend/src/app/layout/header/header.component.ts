@@ -1,10 +1,11 @@
-import { ChangeDetectorRef, Component, DestroyRef, EventEmitter, OnInit, Output, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, EventEmitter, OnInit, Output, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { interval } from 'rxjs';
-import { AuthService } from '../../core/services/auth.service';
 import { DashboardService } from '../../core/services/dashboard.service';
+import { AlertService } from '../../core/services/alert.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -26,22 +27,25 @@ import { DashboardService } from '../../core/services/dashboard.service';
           </span>
         </div>
       </div>
-
-      <div class="header-right">
-        <a href="/api/docs/" target="_blank" rel="noopener noreferrer" class="header-action-btn" title="Open API Swagger">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+      <div class="header-actions">
+        <ng-container *ngIf="{ count: (unreadCount$ | async) } as alertCount">
+        <a *ngIf="currentUser()" class="notification-link" routerLink="/alerts"
+           [attr.aria-label]="alertLabel(alertCount.count)"
+           [attr.title]="alertLabel(alertCount.count)">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+            <path d="M10 21h4"/>
           </svg>
-          <span>API Docs</span>
+          <span class="screen-reader-only" aria-live="polite">
+            {{ alertCount.count === null ? 'Open alert count unavailable' : alertCount.count === 0 ? 'No open alerts' : alertCount.count + ' open alerts' }}
+          </span>
+          <span *ngIf="alertCount.count !== null && alertCount.count > 0" class="notification-count" aria-hidden="true">
+            {{ alertCount.count > 99 ? '99+' : alertCount.count }}
+          </span>
         </a>
-
-        <div class="user-chip" routerLink="/profile">
-          <div class="chip-avatar">{{ currentUser()?.username?.[0]?.toUpperCase() }}</div>
-          <span class="chip-name">{{ currentUser()?.username }}</span>
-          <span class="chip-role">{{ currentUser()?.role }}</span>
-        </div>
+        </ng-container>
       </div>
+
     </header>
   `,
   styles: [`
@@ -126,74 +130,63 @@ import { DashboardService } from '../../core/services/dashboard.service';
       }
     }
 
-    .header-right {
+    .header-actions {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      margin-left: auto;
+      padding-left: 1rem;
+    }
 
-      .header-action-btn {
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-        font-size: 0.8rem;
-        font-weight: 500;
-        color: var(--text-muted);
-        padding: 0.35rem 0.65rem;
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-sm);
-        text-decoration: none;
-        transition: all 0.15s ease;
+    .notification-link {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 9999px;
+      color: var(--text-muted);
+      text-decoration: none;
+    }
 
-        &:hover {
-          color: var(--primary);
-          border-color: var(--primary);
-          background: var(--primary-subtle);
-        }
-      }
+    .notification-link:hover {
+      color: var(--primary);
+      background: #eff6ff;
+    }
 
-      .user-chip {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.25rem 0.65rem 0.25rem 0.25rem;
-        border-radius: 9999px;
-        background: #f1f5f9;
-        cursor: pointer;
-        transition: all 0.15s ease;
+    .notification-link:focus-visible {
+      color: var(--primary);
+      background: #eff6ff;
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
 
-        &:hover {
-          background: #e2e8f0;
-        }
+    .notification-count {
+      position: absolute;
+      top: 0;
+      right: -2px;
+      min-width: 17px;
+      height: 17px;
+      padding: 0 4px;
+      border-radius: 9999px;
+      background: #dc2626;
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      line-height: 17px;
+      text-align: center;
+    }
 
-        .chip-avatar {
-          width: 26px;
-          height: 26px;
-          border-radius: 50%;
-          background: var(--primary);
-          color: #ffffff;
-          font-weight: 600;
-          font-size: 0.75rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .chip-name {
-          font-size: 0.8rem;
-          font-weight: 600;
-          color: var(--text-main);
-        }
-
-        .chip-role {
-          font-size: 0.65rem;
-          font-weight: 700;
-          padding: 0.1rem 0.35rem;
-          background: #ffffff;
-          border-radius: 4px;
-          color: var(--text-muted);
-          border: 1px solid var(--border-color);
-        }
-      }
+    .screen-reader-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     @keyframes pulse {
@@ -211,22 +204,34 @@ import { DashboardService } from '../../core/services/dashboard.service';
         .status-constraints { display: none; }
         .status-label { font-size: 0.68rem; }
       }
-      .header-right { gap: 0.4rem; }
-      .header-action-btn span, .chip-name { display: none; }
     }
   `],
 })
 export class HeaderComponent implements OnInit {
   @Output() toggleSidebar = new EventEmitter<void>();
 
-  private authService = inject(AuthService);
   private dashboardService = inject(DashboardService);
+  private alertService = inject(AlertService);
+  private authService = inject(AuthService);
   private changeDetector = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
-
   readonly currentUser = this.authService.currentUser;
+  private activeUserId: string | null | undefined;
+  private readonly unreadCountSessionEffect = effect(() => {
+    const userId = this.currentUser()?.id ?? null;
+    if (userId === this.activeUserId) return;
+    this.activeUserId = userId;
+    this.alertService.clearUnreadCount();
+    if (userId) {
+      this.alertService.refreshUnreadCount()
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe();
+    }
+  });
+
   aiStatus: 'checking' | 'online' | 'offline' = 'checking';
   aiModelVersion: string | null = null;
+  readonly unreadCount$ = this.alertService.unreadCount$;
 
   get aiStatusLabel(): string {
     if (this.aiStatus === 'online') return 'Predictive Engine Online';
@@ -239,6 +244,12 @@ export class HeaderComponent implements OnInit {
     interval(30_000)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.refreshAiStatus());
+  }
+
+  alertLabel(count: number | null): string {
+    if (count === null) return 'Alerts, open-alert count unavailable';
+    if (count === 0) return 'Alerts, no open alerts';
+    return `Alerts, ${count} open alert${count === 1 ? '' : 's'}`;
   }
 
   private refreshAiStatus(): void {

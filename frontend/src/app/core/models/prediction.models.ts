@@ -12,10 +12,13 @@ export interface ScoredPredictionItem {
 export interface PredictionErrorItem {
   resource_id: string;
   identifier: string;
+  code: 'no_new_prediction' | 'insufficient_history' | 'inference_error' | 'internal_error';
   error: string;
 }
 
 export interface PredictionRunResponse {
+  outcome: 'full_success' | 'partial_success' | 'complete_failure';
+  message?: string;
   scored_count: number;
   results: ScoredPredictionItem[];
   errors: PredictionErrorItem[];

@@ -2,9 +2,9 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { PredictionService } from '../../core/services/prediction.service';
-import { DriveService } from '../../core/services/drive.service';
-import { Drive } from '../../core/models/drive.models';
-import { PredictionRunResponse, ScoredPredictionItem, PredictionErrorItem } from '../../core/models/prediction.models';
+import { PredictionRunResponse } from '../../core/models/prediction.models';
+import { ModelService } from '../../core/services/model.service';
+import { MLModelCard } from '../../core/models/model.models';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -45,7 +45,7 @@ import { AuthService } from '../../core/services/auth.service';
               Output: <strong>Ranking Score [0.0 - 1.0]</strong> (relative failure urgency, not probability)
             </div>
             <div class="thresholds-tag">
-              Decision thresholds: Medium (0.35), High (0.60), Critical (0.80)
+              Active model thresholds: {{ thresholdSummary('FAILURE_PREDICTION') }}
             </div>
           </div>
 
@@ -56,20 +56,32 @@ import { AuthService } from '../../core/services/auth.service';
               Unsupervised deep autoencoder measuring telemetry reconstruction error to flag <strong>physical degradation anomalies</strong>.
             </p>
             <div class="model-constraint-tag">
-              Output: <strong>Reconstruction Error</strong> vs Anomaly Threshold (0.05)
+              Output: <strong>Reconstruction Error</strong> compared with the active anomaly threshold
             </div>
             <div class="thresholds-tag">
-              Evaluates unexpected operational dynamics independently of failure timing
+              Active model threshold: {{ thresholdSummary('ANOMALY_DETECTION') }}. Evaluates anomalies independently of failure timing.
             </div>
           </div>
         </div>
       </div>
 
       <!-- Execution Status / Summary -->
+      <div *ngIf="runErrorMessage" class="execution-outcome outcome-failure" role="alert">
+        {{ runErrorMessage }}
+      </div>
+      <div *ngIf="lastResponse" class="execution-outcome" role="status"
+        [class.outcome-success]="lastResponse.outcome === 'full_success'"
+        [class.outcome-partial]="lastResponse.outcome === 'partial_success'"
+        [class.outcome-failure]="lastResponse.outcome === 'complete_failure'">
+        {{ outcomeMessage(lastResponse) }}
+      </div>
       <div class="card execution-summary-card" *ngIf="lastResponse">
         <div class="card-header">
           <h3>Batch Inference Summary</h3>
-          <span class="badge badge-passed">{{ lastResponse.scored_count }} Drives Scored</span>
+          <span class="badge" [class.badge-passed]="lastResponse.outcome === 'full_success'"
+            [class.badge-warning]="lastResponse.outcome !== 'full_success'">
+            {{ lastResponse.scored_count }} Drives Scored
+          </span>
         </div>
         <div class="summary-body">
           <div class="summary-stat">
@@ -77,7 +89,7 @@ import { AuthService } from '../../core/services/auth.service';
             <span class="stat-val font-mono">{{ lastResponse.scored_count }}</span>
           </div>
           <div class="summary-stat">
-            <span class="stat-label">SKIPPED / UNMET CONSTRAINTS</span>
+            <span class="stat-label">FAILED OR NOT SCORED</span>
             <span class="stat-val font-mono" [class.text-warning]="lastResponse.errors.length > 0">{{ lastResponse.errors.length }}</span>
           </div>
         </div>
@@ -141,21 +153,22 @@ import { AuthService } from '../../core/services/auth.service';
       <!-- Skipped / Constraints Warnings Table -->
       <div class="card errors-card" *ngIf="lastResponse && lastResponse.errors.length > 0">
         <div class="card-header">
-          <h3>Skipped Drives / Unmet History Constraints</h3>
+          <h3>Failed or Skipped Drives</h3>
         </div>
         <div class="table-container">
           <table class="table">
             <thead>
               <tr>
                 <th>Drive Serial / ID</th>
-                <th>Constraint Status</th>
+                <th>Outcome</th>
                 <th>Explanation</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let err of lastResponse.errors">
                 <td class="font-mono">{{ err.identifier }}</td>
-                <td><span class="badge badge-warning">SKIPPED</span></td>
+                <td><span class="badge" [class.badge-warning]="isSkipped(err.code)"
+                  [class.badge-critical]="!isSkipped(err.code)">{{ isSkipped(err.code) ? 'SKIPPED' : 'FAILED' }}</span></td>
                 <td class="text-muted">{{ err.error }}</td>
               </tr>
             </tbody>
@@ -170,6 +183,16 @@ import { AuthService } from '../../core/services/auth.service';
       flex-direction: column;
       gap: 1.5rem;
     }
+
+    .execution-outcome {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 0.85rem 1rem;
+      font-weight: 600;
+    }
+    .outcome-success { color: var(--success); background: rgba(16, 185, 129, 0.08); }
+    .outcome-partial { color: var(--warning); background: rgba(245, 158, 11, 0.1); }
+    .outcome-failure { color: var(--danger); background: rgba(239, 68, 68, 0.08); }
 
     .page-header {
       display: flex;
@@ -278,25 +301,65 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class PredictionsComponent implements OnInit {
   private predictionService = inject(PredictionService);
+  private modelService = inject(ModelService);
   private authService = inject(AuthService);
 
   readonly isITProOrSysAdmin = this.authService.isITProOrSysAdmin;
 
   running = false;
   lastResponse: PredictionRunResponse | null = null;
+  runErrorMessage = '';
+  models: MLModelCard[] = [];
 
   ngOnInit(): void {
-    // Optionally trigger or display initial state
+    this.modelService.getModels().subscribe({
+      next: (models) => { this.models = models; },
+      error: () => { this.models = []; },
+    });
+  }
+
+  thresholdSummary(modelType: MLModelCard['model_type']): string {
+    const model = this.models.find((candidate) => candidate.model_type === modelType && candidate.is_active);
+    if (!model) return 'Unavailable';
+    const available = Object.entries(model.thresholds ?? {}).filter(
+      ([, value]) => typeof value === 'number' && Number.isFinite(value),
+    );
+    return available.length
+      ? available.map(([name, value]) => `${name.toUpperCase()} (${value})`).join(', ')
+      : 'Unavailable';
+  }
+
+  outcomeMessage(response: PredictionRunResponse): string {
+    if (response.outcome === 'full_success') {
+      return 'All requested drives were scored successfully.';
+    }
+    if (response.outcome === 'partial_success') {
+      return `Partial success: ${response.scored_count} drives scored; ${response.errors.length} could not be scored.`;
+    }
+    return response.message || 'Prediction run failed. No drives were successfully scored.';
+  }
+
+  isSkipped(code: string): boolean {
+    return code === 'no_new_prediction' || code === 'insufficient_history';
   }
 
   onRunAllInference(): void {
     this.running = true;
+    this.lastResponse = null;
+    this.runErrorMessage = '';
     this.predictionService.runPrediction().subscribe({
       next: (resp) => {
         this.lastResponse = resp;
         this.running = false;
       },
-      error: () => {
+      error: (error) => {
+        const response = error?.error as PredictionRunResponse | undefined;
+        if (response && ['full_success', 'partial_success', 'complete_failure'].includes(response.outcome)
+            && Array.isArray(response.results) && Array.isArray(response.errors)) {
+          this.lastResponse = response;
+        } else {
+          this.runErrorMessage = 'The prediction request could not be completed. Please try again.';
+        }
         this.running = false;
       },
     });

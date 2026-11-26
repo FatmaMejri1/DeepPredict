@@ -3,6 +3,7 @@
 import asyncio
 import json
 import os
+import secrets
 import shutil
 import socket
 import subprocess
@@ -13,10 +14,11 @@ from datetime import datetime, timedelta, timezone
 from contextlib import contextmanager
 from functools import wraps
 from pathlib import Path
-from urllib.error import URLError
-from urllib.request import urlopen
+from urllib.error import HTTPError, URLError
+from urllib.request import proxy_bypass, urlopen
 
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from playwright.sync_api import sync_playwright
 
@@ -31,8 +33,46 @@ User = get_user_model()
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 PROJECT_DIR = BACKEND_DIR.parent
 FRONTEND_DIR = PROJECT_DIR / "frontend"
-EVIDENCE_DIR = BACKEND_DIR / "evidence" / "e2e"
+if getattr(settings, "FULL_REGRESSION_TEST_MODE", False):
+    if (
+        os.environ.get("DJANGO_SETTINGS_MODULE") != "config.full_regression_settings"
+        or os.environ.get("DEEPPREDICT_FULL_REGRESSION_OWNER")
+        != getattr(settings, "E2E_TEST_DB_OWNER", None)
+    ):
+        raise RuntimeError("Full-regression evidence settings are not validated.")
+    configured_evidence_dir = Path(settings.FULL_REGRESSION_EVIDENCE_DIRECTORY)
+    evidence_environment_dir = os.environ.get("DEEPPREDICT_E2E_EVIDENCE_DIR")
+    expected_evidence_dir = (
+        BACKEND_DIR / "evidence" / "e2e"
+        / f"full-regression-{settings.E2E_TEST_DB_OWNER}"
+    )
+    if (
+        not evidence_environment_dir
+        or configured_evidence_dir.resolve(strict=False)
+        != expected_evidence_dir.resolve(strict=False)
+        or Path(evidence_environment_dir).resolve(strict=False)
+        != configured_evidence_dir.resolve(strict=False)
+    ):
+        raise RuntimeError("Full-regression evidence path is invalid.")
+    EVIDENCE_DIR = configured_evidence_dir.resolve(strict=False)
+else:
+    # Ordinary E2E-only runs always retain the established evidence location;
+    # inherited full-regression environment values cannot redirect or overwrite it.
+    EVIDENCE_DIR = BACKEND_DIR / "evidence" / "e2e"
 ANGULAR_READY_TIMEOUT = 180
+PROXY_ENVIRONMENT_NAMES = {
+    "http_proxy",
+    "https_proxy",
+    "all_proxy",
+    "no_proxy",
+}
+
+
+def _proxy_environment_names():
+    """Report proxy configuration names without exposing their values."""
+    return sorted(
+        name for name in os.environ if name.casefold() in PROXY_ENVIRONMENT_NAMES
+    )
 
 
 @contextmanager
@@ -108,6 +148,7 @@ def _record_scenario(test_method):
 class AngularDeepPredictE2ETests(StaticLiveServerTestCase):
     """Run the Angular frontend against Django's isolated live test database."""
 
+    databases = {"default"}
     e2e_results = []
     playwright_loop = None
 
@@ -184,24 +225,56 @@ class AngularDeepPredictE2ETests(StaticLiveServerTestCase):
     def _wait_for_angular(cls):
         url = f"http://127.0.0.1:{cls.angular_port}/"
         deadline = time.monotonic() + ANGULAR_READY_TIMEOUT
+        last_http_status = None
+        last_response_excerpt = None
+        last_exception = None
         while time.monotonic() < deadline:
             if cls.angular_process.poll() is not None:
                 cls.angular_log.flush()
                 cls.angular_log.seek(0)
                 tail = "".join(cls.angular_log.readlines()[-60:])
-                raise RuntimeError(f"Angular dev server exited during startup:\n{tail}")
+                raise RuntimeError(
+                    "Angular dev server exited during startup. "
+                    f"URL={url}; last_http_status={last_http_status!r}; "
+                    f"last_response_excerpt={last_response_excerpt!r}; "
+                    f"last_probe_exception={last_exception!r}; "
+                    f"proxy_env_names={_proxy_environment_names()!r}; "
+                    f"proxy_bypasses_loopback={proxy_bypass('127.0.0.1')!r}\n{tail}"
+                )
             try:
                 with urlopen(url, timeout=2) as response:
-                    if response.status == 200 and b"app-root" in response.read():
+                    response_body = response.read()
+                    last_http_status = response.status
+                    last_response_excerpt = response_body[:500].decode(
+                        "utf-8", errors="replace"
+                    )
+                    last_exception = None
+                    if response.status == 200 and b"app-root" in response_body:
                         return
-            except (URLError, TimeoutError, OSError):
-                pass
+            except HTTPError as exc:
+                last_http_status = exc.code
+                try:
+                    last_response_excerpt = exc.read(500).decode(
+                        "utf-8", errors="replace"
+                    )
+                except OSError:
+                    last_response_excerpt = None
+                last_exception = f"{type(exc).__name__}: {exc}"
+            except (URLError, TimeoutError, OSError) as exc:
+                last_exception = f"{type(exc).__name__}: {exc}"
             time.sleep(1)
 
         cls.angular_log.flush()
         cls.angular_log.seek(0)
         tail = "".join(cls.angular_log.readlines()[-60:])
-        raise RuntimeError(f"Angular dev server did not become ready:\n{tail}")
+        raise RuntimeError(
+            "Angular dev server did not become ready. "
+            f"URL={url}; last_http_status={last_http_status!r}; "
+            f"last_response_excerpt={last_response_excerpt!r}; "
+            f"last_probe_exception={last_exception!r}; "
+            f"proxy_env_names={_proxy_environment_names()!r}; "
+            f"proxy_bypasses_loopback={proxy_bypass('127.0.0.1')!r}\n{tail}"
+        )
 
     @classmethod
     def _stop_angular(cls):
@@ -268,7 +341,7 @@ class AngularDeepPredictE2ETests(StaticLiveServerTestCase):
             super()._post_teardown()
 
     def _create_demo_data(self):
-        self.password = "E2E-Test-Password-2026!"
+        self.password = secrets.token_urlsafe(32)
         self.it_pro = User.objects.create_user(
             username="e2e_itpro", email="e2e_itpro@example.com",
             password=self.password, role=Role.IT_PRO,
@@ -397,6 +470,17 @@ class AngularDeepPredictE2ETests(StaticLiveServerTestCase):
     @_record_scenario
     def test_it_pro_dashboard_drive_risk_and_charts(self):
         self._login("e2e_itpro")
+        self.page.reload()
+        self._check("IT_PRO refresh stays on overview", self.page.url.endswith("/overview"), self.page.url)
+        self.page.locator(".kpi-grid").wait_for(state="visible", timeout=20_000)
+        self.page.goto(f"http://127.0.0.1:{self.angular_port}/upload")
+        self.page.get_by_role("heading", name="Upload SMART Telemetry").wait_for(state="visible")
+        self.page.reload()
+        self.page.get_by_role("heading", name="Upload SMART Telemetry").wait_for(state="visible")
+        self.page.goto(f"http://127.0.0.1:{self.angular_port}/predictions")
+        self.page.get_by_role("heading", name="AI Inference Engine").wait_for(state="visible")
+        self.page.goto(f"http://127.0.0.1:{self.angular_port}/overview")
+        self.page.locator(".kpi-grid").wait_for(state="visible")
 
         expected_kpis = {
             "TOTAL MONITORED DRIVES": "2",
@@ -410,6 +494,25 @@ class AngularDeepPredictE2ETests(StaticLiveServerTestCase):
             card = self.page.locator(".kpi-card").filter(has_text=label)
             actual = card.locator(".kpi-value").inner_text()
             self._check(f"Dashboard KPI {label}", actual == expected, f"expected {expected}, got {actual}")
+
+        self.page.get_by_label("Drive status").select_option("HIGH_RISK")
+        self.page.get_by_label("Failure risk").select_option("HIGH")
+        self.page.get_by_label("Anomaly").select_option("true")
+        self.page.wait_for_function(
+            """() => document.querySelector('.kpi-card.total .kpi-value')?.textContent?.trim() === '1'"""
+        )
+        filtered_risk = self.page.locator(".kpi-card.high-risk .kpi-value").inner_text()
+        filtered_activity = self.page.locator(".activity-list").inner_text()
+        self._check("Dashboard filters update KPIs", filtered_risk == "1", filtered_risk)
+        self._check(
+            "Dashboard filters update recent activity",
+            "DP-E2E-RISK-001" in filtered_activity and "DP-E2E-HEALTHY-001" not in filtered_activity,
+            filtered_activity,
+        )
+        self.page.get_by_role("button", name="Clear filters").click()
+        self.page.wait_for_function(
+            """() => document.querySelector('.kpi-card.total .kpi-value')?.textContent?.trim() === '2'"""
+        )
 
         self._screenshot("angular_01_itpro_overview")
         self.page.get_by_role("link", name="Drives Inventory").click()
@@ -452,6 +555,17 @@ class AngularDeepPredictE2ETests(StaticLiveServerTestCase):
     @_record_scenario
     def test_operator_read_only_access(self):
         self._login("e2e_operator")
+        self._check("Operator login tokens are stored before refresh", self.page.evaluate(
+            """() => Boolean(localStorage.getItem('dp_access_token') && localStorage.getItem('dp_refresh_token'))"""
+        ))
+        self.page.reload()
+        self.page.wait_for_load_state("networkidle")
+        self._check("Operator refresh stays on overview", self.page.url.endswith("/overview"), self.page.url)
+        self.page.locator(".kpi-grid").wait_for(state="visible", timeout=20_000)
+        for restricted_path in ("upload", "predictions"):
+            self.page.goto(f"http://127.0.0.1:{self.angular_port}/{restricted_path}")
+            self.page.wait_for_url("**/overview", timeout=20_000)
+            self.page.locator(".kpi-grid").wait_for(state="visible", timeout=20_000)
         admin_link = self.page.get_by_role("link", name="Users & Roles")
         self._check("Operator cannot see admin navigation", admin_link.count() == 0)
         self._check("Operator has no write actions on overview", self.page.get_by_role("link", name="Upload Telemetry").count() == 0)
@@ -490,11 +604,16 @@ class AngularDeepPredictE2ETests(StaticLiveServerTestCase):
     @_record_scenario
     def test_sysadmin_navigation_and_user_management(self):
         self._login("e2e_sysadmin")
+        self.page.reload()
+        self._check("SYSADMIN refresh stays on overview", self.page.url.endswith("/overview"), self.page.url)
+        self.page.locator(".kpi-grid").wait_for(state="visible", timeout=20_000)
         admin_link = self.page.get_by_role("link", name="Users & Roles")
         self._check("Sysadmin sees administration navigation", admin_link.count() == 1)
         self._screenshot("angular_06_sysadmin_overview")
 
-        admin_link.click()
+        self.page.goto(f"http://127.0.0.1:{self.angular_port}/users")
+        self.page.get_by_role("heading", name="User Management").wait_for(state="visible")
+        self.page.reload()
         self.page.get_by_role("heading", name="User Management").wait_for(state="visible")
         self.page.get_by_text("e2e_itpro", exact=True).wait_for(state="visible")
         self._check("Sysadmin can open user management", self.page.get_by_role("heading", name="User Management").count() == 1)

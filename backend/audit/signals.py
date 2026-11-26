@@ -1,13 +1,25 @@
+import logging
+
 from django.contrib.auth import user_logged_in, user_logged_out, user_login_failed
 from django.dispatch import receiver
 from .models import ActionType
 from .services import get_client_ip, log_action
 
+logger = logging.getLogger("audit")
+
+
+def _log_auth_action(**kwargs):
+    """Authentication audit events are best-effort and must not block auth."""
+    try:
+        log_action(**kwargs)
+    except Exception:
+        logger.exception("Failed to write best-effort authentication audit event")
+
 
 @receiver(user_logged_in)
 def on_user_logged_in(sender, request, user, **kwargs):
     ip = get_client_ip(request)
-    log_action(
+    _log_auth_action(
         action=ActionType.LOGIN_SUCCESS,
         user=user,
         resource_type="auth",
@@ -20,7 +32,7 @@ def on_user_logged_in(sender, request, user, **kwargs):
 @receiver(user_logged_out)
 def on_user_logged_out(sender, request, user, **kwargs):
     ip = get_client_ip(request)
-    log_action(
+    _log_auth_action(
         action=ActionType.LOGOUT,
         user=user,
         resource_type="auth",
@@ -34,7 +46,7 @@ def on_user_logged_out(sender, request, user, **kwargs):
 def on_user_login_failed(sender, credentials, request, **kwargs):
     ip = get_client_ip(request)
     attempted_username = credentials.get("username", "<empty>") if credentials else "<unknown>"
-    log_action(
+    _log_auth_action(
         action=ActionType.LOGIN_FAILED,
         user=attempted_username,
         resource_type="auth",

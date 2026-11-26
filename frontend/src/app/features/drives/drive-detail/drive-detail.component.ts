@@ -1,19 +1,30 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Chart, registerables } from 'chart.js';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EMPTY, Subject, catchError, distinctUntilChanged, filter, map, switchMap } from 'rxjs';
 import { DriveService } from '../../../core/services/drive.service';
 import { PredictionService } from '../../../core/services/prediction.service';
 import { DriveDetail, DrivePredictionHistoryItem, DriveTelemetryData } from '../../../core/models/drive.models';
 import { AuthService } from '../../../core/services/auth.service';
+import { DriveTimelineComponent } from '../drive-timeline/drive-timeline.component';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-drive-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, DriveTimelineComponent],
   template: `
+    <div *ngIf="driveLoading && !drive" class="dashboard-state loading-state" role="status">
+      Loading drive details…
+    </div>
+    <div *ngIf="driveError" class="dashboard-state error-state" role="alert">
+      <span>{{ driveError }}</span>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="loadData()">Try again</button>
+    </div>
     <div class="drive-detail-page" *ngIf="drive">
       <!-- Breadcrumb & Navigation -->
       <div class="top-nav">
@@ -107,37 +118,63 @@ Chart.register(...registerables);
               <h3>LSTM-AE Anomaly Detection</h3>
               <span class="subtext">Unsupervised reconstruction error</span>
             </div>
-            <span class="badge" [class.badge-anomaly]="drive.is_anomalous" [class.badge-neutral]="!drive.is_anomalous">
-              {{ drive.is_anomalous ? 'ANOMALY DETECTED' : 'NORMAL PATTERN' }}
+            <span class="badge"
+              [class.badge-anomaly]="anomalyStatus === 'ANOMALOUS'"
+              [class.badge-healthy]="anomalyStatus === 'NORMAL'"
+              [class.badge-neutral]="anomalyStatus !== 'ANOMALOUS' && anomalyStatus !== 'NORMAL'">
+              {{ anomalyStatus }}
             </span>
           </div>
 
           <div class="score-stat">
-            <div class="stat-icon" [class.anomaly-icon]="drive.is_anomalous">
+            <div class="stat-icon" [class.anomaly-icon]="anomalyStatus === 'ANOMALOUS'">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/>
                 <path d="M12 8v4M12 16h.01"/>
               </svg>
             </div>
             <div class="stat-info">
-              <strong>Telemetry Deviation Analysis</strong>
+              <strong>Reconstruction error score</strong>
+              <span class="stat-number font-mono" *ngIf="anomalyScore !== null">{{ anomalyScore | number:'1.3-4' }}</span>
+              <span class="text-muted" *ngIf="anomalyScore === null && historyLoading">Loading anomaly assessment…</span>
+              <span class="text-muted" *ngIf="anomalyScore === null && historyError">
+                Assessment unavailable
+                <button type="button" class="btn btn-secondary btn-sm" (click)="loadHistory()">Retry</button>
+              </span>
+              <span class="text-muted" *ngIf="anomalyScore === null && !historyLoading && !historyError">No score available</span>
               <p class="model-note">
-                Flags unusual physical degradation signatures that differ significantly from historical baseline behavior.
+                LSTM Autoencoder anomaly assessment. This result is independent of the GRU failure-risk score.
               </p>
             </div>
           </div>
         </div>
       </div>
 
+      <div *ngIf="telemetryLoading" class="dashboard-state loading-state" role="status">Loading SMART telemetry…</div>
+      <div *ngIf="telemetryError" class="dashboard-state error-state" role="alert">
+        <span>{{ telemetryError }}</span>
+        <button type="button" class="btn btn-secondary btn-sm" (click)="loadTelemetry()">Try again</button>
+      </div>
+      <div *ngIf="!telemetryLoading && !telemetryError && !hasSmartData && !hasRiskData" class="dashboard-state empty-state">
+        No SMART telemetry or risk history is available for this drive.
+      </div>
+
       <!-- Time-Series Charts Grid -->
-      <div class="charts-grid">
+      <div class="charts-grid" *ngIf="!telemetryLoading && !telemetryError && (hasSmartData || hasRiskData)">
         <!-- Chart 1: SMART Physical Degradation Counters -->
-        <div class="card chart-card">
+        <div class="card chart-card" *ngIf="hasSmartData">
           <div class="card-header">
             <div>
               <h3>SMART Physical Degradation Counters</h3>
               <p class="chart-subtitle">Reallocated Sectors (5), Uncorrectable Errors (187), Pending Sectors (197)</p>
             </div>
+            <label class="range-control">History
+              <select [ngModel]="telemetryDays" (ngModelChange)="changeTelemetryRange($event)" aria-label="SMART telemetry history range">
+                <option [ngValue]="30">30 days</option>
+                <option [ngValue]="90">90 days</option>
+                <option [ngValue]="180">180 days</option>
+              </select>
+            </label>
           </div>
           <div class="canvas-wrapper">
             <canvas #smartCanvas></canvas>
@@ -145,11 +182,12 @@ Chart.register(...registerables);
         </div>
 
         <!-- Chart 2: Failure-Risk Score History vs Decision Thresholds -->
-        <div class="card chart-card">
+        <div class="card chart-card" *ngIf="hasRiskData">
           <div class="card-header">
             <div>
               <h3>Historical Failure-Risk Score vs Calibrated Thresholds</h3>
-              <p class="chart-subtitle">Thresholds: Medium (0.35), High (0.60), Critical (0.80)</p>
+              <p class="chart-subtitle" *ngIf="riskThresholdSummary">Active model thresholds: {{ riskThresholdSummary }}</p>
+              <p class="chart-subtitle" *ngIf="!riskThresholdSummary">Active model risk thresholds are unavailable; only the risk score is shown.</p>
             </div>
           </div>
           <div class="canvas-wrapper">
@@ -191,33 +229,7 @@ Chart.register(...registerables);
         </div>
       </div>
 
-      <section class="card history-card" aria-labelledby="prediction-history-title">
-        <div class="card-header">
-          <h3 id="prediction-history-title">Prediction history</h3>
-        </div>
-        <p *ngIf="historyLoading" role="status">Loading prediction history…</p>
-        <p *ngIf="historyError" class="text-muted" role="alert">Prediction history could not be loaded.</p>
-        <p *ngIf="!historyLoading && !historyError && predictionHistory.length === 0" class="text-muted">
-          No predictions yet for this drive.
-        </p>
-        <div class="history-table-wrap" *ngIf="!historyLoading && predictionHistory.length > 0">
-          <table class="history-table">
-            <thead>
-              <tr><th>Window end</th><th>Type</th><th>Result</th><th>Score</th><th>Model</th><th>Created</th></tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let prediction of predictionHistory">
-                <td>{{ prediction.window_end | date:'medium' }}</td>
-                <td>{{ prediction.prediction_type === 'FAILURE_PREDICTION' ? 'Failure risk' : 'Anomaly detection' }}</td>
-                <td>{{ prediction.risk_level || (prediction.is_anomalous ? 'Anomalous' : 'Normal') }}</td>
-                <td>{{ prediction.score | number:'1.3-3' }}</td>
-                <td>{{ prediction.model.name }} <span class="text-muted">{{ prediction.model.version }}</span></td>
-                <td>{{ prediction.created_at | date:'medium' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <app-drive-timeline [driveId]="driveId" [refreshToken]="timelineRefreshToken"></app-drive-timeline>
     </div>
   `,
   styles: [`
@@ -385,6 +397,22 @@ Chart.register(...registerables);
       }
     }
 
+    .range-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+
+      select {
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        padding: 0.4rem 0.55rem;
+        color: var(--text-main);
+        background: #fff;
+      }
+    }
+
     .metadata-card {
       .meta-grid {
         display: grid;
@@ -411,11 +439,6 @@ Chart.register(...registerables);
       }
     }
 
-    .history-table-wrap { overflow-x: auto; }
-    .history-table { width: 100%; border-collapse: collapse; font-size: 0.825rem; }
-    .history-table th, .history-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
-    .history-table th { color: var(--text-muted); font-weight: 600; }
-
     .font-mono {
       font-family: ui-monospace, SFMono-Regular, monospace;
     }
@@ -430,12 +453,22 @@ export class DriveDetailComponent implements OnInit {
   private predictionService = inject(PredictionService);
   private authService = inject(AuthService);
   private changeDetector = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
+  private driveRequests = new Subject<string>();
+  private historyRequests = new Subject<string>();
+  private telemetryRangeRequests = new Subject<{ driveId: string; days: number }>();
 
   readonly isITProOrSysAdmin = this.authService.isITProOrSysAdmin;
 
   driveId!: string;
   drive: DriveDetail | null = null;
+  driveLoading = true;
+  driveError = '';
+  timelineRefreshToken = 0;
   telemetryData: DriveTelemetryData | null = null;
+  telemetryDays = 90;
+  telemetryLoading = true;
+  telemetryError = '';
   predictionHistory: DrivePredictionHistoryItem[] = [];
   historyLoading = true;
   historyError = false;
@@ -447,49 +480,171 @@ export class DriveDetailComponent implements OnInit {
   private riskChart: Chart | null = null;
 
   ngOnInit(): void {
-    this.driveId = this.route.snapshot.paramMap.get('id')!;
-    this.loadData();
+    this.driveRequests.pipe(
+      switchMap((driveId) => this.driveService.getDrive(driveId).pipe(
+        catchError((error) => {
+          this.drive = null;
+          this.driveLoading = false;
+          this.driveError = error.status === 404
+            ? 'Drive not found.'
+            : 'Drive details could not be loaded.';
+          this.changeDetector.markForCheck();
+          return EMPTY;
+        }),
+      )),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe((drive) => {
+      this.drive = drive;
+      this.driveLoading = false;
+      this.changeDetector.markForCheck();
+    });
+
+    this.historyRequests.pipe(
+      switchMap((driveId) => this.driveService.getPredictionHistory(driveId).pipe(
+        catchError(() => {
+          this.historyLoading = false;
+          this.historyError = true;
+          this.changeDetector.markForCheck();
+          return EMPTY;
+        }),
+      )),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe((history) => {
+      this.predictionHistory = history;
+      this.historyLoading = false;
+      this.changeDetector.markForCheck();
+    });
+
+    this.telemetryRangeRequests.pipe(
+      switchMap(({ driveId, days }) => this.driveService.getTelemetry(driveId, days).pipe(
+        catchError(() => {
+          this.telemetryLoading = false;
+          this.telemetryError = 'SMART telemetry could not be loaded.';
+          this.changeDetector.markForCheck();
+          return EMPTY;
+        }),
+      )),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe((data) => {
+      this.telemetryData = data;
+      this.telemetryLoading = false;
+      this.changeDetector.markForCheck();
+      setTimeout(() => this.renderCharts(), 50);
+    });
+
+    this.route.paramMap.pipe(
+      map((params) => params.get('id') ?? ''),
+      filter((driveId) => Boolean(driveId)),
+      distinctUntilChanged(),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe((driveId) => {
+      const driveChanged = this.driveId !== driveId;
+      this.driveId = driveId;
+      if (driveChanged) this.resetDriveState();
+      this.loadData();
+    });
   }
 
   loadData(): void {
-    this.driveService.getDrive(this.driveId).subscribe({
-      next: (d) => {
-        this.drive = d;
-        this.changeDetector.markForCheck();
-      },
-    });
+    this.driveLoading = true;
+    this.driveError = '';
+    this.timelineRefreshToken++;
+    this.driveRequests.next(this.driveId);
+    this.loadTelemetry();
+    this.loadHistory();
+  }
 
-    this.driveService.getTelemetry(this.driveId, 90).subscribe({
-      next: (data) => {
-        this.telemetryData = data;
-        this.changeDetector.markForCheck();
-        setTimeout(() => this.renderCharts(), 50);
-      },
-    });
-
+  loadHistory(): void {
     this.historyLoading = true;
     this.historyError = false;
-    this.driveService.getPredictionHistory(this.driveId).subscribe({
-      next: (history) => {
-        this.predictionHistory = history;
-        this.historyLoading = false;
-        this.changeDetector.markForCheck();
-      },
-      error: () => {
-        this.historyLoading = false;
-        this.historyError = true;
-        this.changeDetector.markForCheck();
-      },
-    });
+    this.predictionHistory = [];
+    this.historyRequests.next(this.driveId);
+  }
+
+  loadTelemetry(): void {
+    this.telemetryLoading = true;
+    this.telemetryError = '';
+    this.telemetryData = null;
+    this.smartChart?.destroy();
+    this.riskChart?.destroy();
+
+    this.telemetryRangeRequests.next({ driveId: this.driveId, days: this.telemetryDays });
+  }
+
+  private resetDriveState(): void {
+    this.drive = null;
+    this.driveLoading = true;
+    this.driveError = '';
+    this.telemetryData = null;
+    this.telemetryLoading = true;
+    this.telemetryError = '';
+    this.predictionHistory = [];
+    this.historyLoading = true;
+    this.historyError = false;
+    this.scoring = false;
+    this.scoreMessage = '';
+    this.scoreError = false;
+    this.smartChart?.destroy();
+    this.smartChart = null;
+    this.riskChart?.destroy();
+    this.riskChart = null;
+    this.changeDetector.markForCheck();
+  }
+
+  changeTelemetryRange(days: number): void {
+    this.telemetryDays = Number(days);
+    this.loadTelemetry();
+  }
+
+  get hasSmartData(): boolean {
+    return Boolean(this.telemetryData?.smart?.labels?.length && this.telemetryData.smart.series?.some(
+      (series) => series.values.some((value) => typeof value === 'number' && Number.isFinite(value)),
+    ));
+  }
+
+  get hasRiskData(): boolean {
+    return Boolean(this.telemetryData?.risk?.labels?.length && this.telemetryData.risk.scores?.length);
+  }
+
+  get latestAnomalyPrediction(): DrivePredictionHistoryItem | null {
+    return this.predictionHistory.find((item) => item.prediction_type === 'ANOMALY_DETECTION') ?? null;
+  }
+
+  get anomalyStatus(): string {
+    if (this.historyLoading) return 'CHECKING';
+    if (this.historyError) return 'UNKNOWN';
+    const latest = this.latestAnomalyPrediction;
+    if (latest?.is_anomalous === true) return 'ANOMALOUS';
+    if (latest?.is_anomalous === false) return 'NORMAL';
+    return this.drive?.anomaly_evaluated ? 'UNKNOWN' : 'NOT EVALUATED';
+  }
+
+  get anomalyScore(): number | null {
+    return this.latestAnomalyPrediction?.score ?? null;
+  }
+
+  get riskThresholdSummary(): string {
+    const thresholds = this.telemetryData?.thresholds;
+    if (!thresholds) return '';
+    return [
+      ['Medium', thresholds.medium],
+      ['High', thresholds.high],
+      ['Critical', thresholds.critical],
+    ]
+      .filter((entry): entry is [string, number] => typeof entry[1] === 'number' && Number.isFinite(entry[1]))
+      .map(([label, value]) => `${label} (${value})`)
+      .join(', ');
   }
 
   onScoreDrive(): void {
+    const requestedDriveId = this.driveId;
     this.scoring = true;
     this.scoreMessage = '';
     this.scoreError = false;
 
     this.predictionService.runPrediction(this.driveId).subscribe({
       next: (res) => {
+        if (requestedDriveId !== this.driveId) return;
         this.scoring = false;
         if (res.results.length > 0) {
           const item = res.results[0];
@@ -501,6 +656,7 @@ export class DriveDetailComponent implements OnInit {
         }
       },
       error: (err) => {
+        if (requestedDriveId !== this.driveId) return;
         this.scoring = false;
         this.scoreError = true;
         this.scoreMessage = `Inference request failed: ${err.error?.detail || err.message}`;
@@ -551,9 +707,20 @@ export class DriveDetailComponent implements OnInit {
 
       const labels = this.telemetryData.risk.labels;
       const scores = this.telemetryData.risk.scores;
-      const medThresh = this.telemetryData.thresholds?.medium ?? 0.35;
-      const highThresh = this.telemetryData.thresholds?.high ?? 0.60;
-      const critThresh = this.telemetryData.thresholds?.critical ?? 0.80;
+      const thresholdDatasets = [
+        { label: 'Critical', value: this.telemetryData.thresholds?.critical, color: '#ef4444' },
+        { label: 'High', value: this.telemetryData.thresholds?.high, color: '#f97316' },
+        { label: 'Medium', value: this.telemetryData.thresholds?.medium, color: '#facc15' },
+      ]
+        .filter((threshold) => typeof threshold.value === 'number' && Number.isFinite(threshold.value))
+        .map((threshold) => ({
+          label: `${threshold.label} Threshold (${threshold.value})`,
+          data: new Array(labels.length).fill(threshold.value as number),
+          borderColor: threshold.color,
+          borderDash: [5, 5],
+          pointRadius: 0,
+          fill: false,
+        }));
 
       this.riskChart = new Chart(this.riskCanvas.nativeElement, {
         type: 'line',
@@ -569,30 +736,7 @@ export class DriveDetailComponent implements OnInit {
               tension: 0.2,
               pointRadius: 3,
             },
-            {
-              label: `Critical Threshold (${critThresh})`,
-              data: new Array(labels.length).fill(critThresh),
-              borderColor: '#ef4444',
-              borderDash: [5, 5],
-              pointRadius: 0,
-              fill: false,
-            },
-            {
-              label: `High Threshold (${highThresh})`,
-              data: new Array(labels.length).fill(highThresh),
-              borderColor: '#f97316',
-              borderDash: [5, 5],
-              pointRadius: 0,
-              fill: false,
-            },
-            {
-              label: `Medium Threshold (${medThresh})`,
-              data: new Array(labels.length).fill(medThresh),
-              borderColor: '#facc15',
-              borderDash: [5, 5],
-              pointRadius: 0,
-              fill: false,
-            },
+            ...thresholdDatasets,
           ],
         },
         options: {
@@ -611,7 +755,7 @@ export class DriveDetailComponent implements OnInit {
   }
 
   formatCapacity(bytes?: number): string {
-    if (!bytes) return '12 TB';
+    if (bytes === undefined || bytes === null || !Number.isFinite(bytes) || bytes <= 0) return '—';
     const tb = bytes / (1024 * 1024 * 1024 * 1024);
     return `${tb.toFixed(1)} TB`;
   }

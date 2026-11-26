@@ -2,7 +2,15 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Drive, DriveDetail, DrivePredictionHistoryItem, DriveTelemetryData, PaginatedResponse } from '../models/drive.models';
+import {
+  Drive,
+  DriveDetail,
+  DrivePredictionHistoryItem,
+  DriveTelemetryData,
+  DriveTimelinePage,
+  DriveTimelineQuery,
+  PaginatedResponse,
+} from '../models/drive.models';
 
 export interface DriveQueryParams {
   search?: string;
@@ -45,5 +53,15 @@ export class DriveService {
 
   getPredictionHistory(id: string): Observable<DrivePredictionHistoryItem[]> {
     return this.http.get<DrivePredictionHistoryItem[]>(`${environment.apiUrl}/drives/${id}/predictions/`);
+  }
+
+  getTimeline(id: string, query: DriveTimelineQuery): Observable<DriveTimelinePage> {
+    let params = new HttpParams()
+      .set('page', query.page.toString())
+      .set('page_size', query.page_size.toString());
+    if (query.type) params = params.set('type', query.type);
+    if (query.from) params = params.set('from', query.from);
+    if (query.to) params = params.set('to', query.to);
+    return this.http.get<DriveTimelinePage>(`${environment.apiUrl}/drives/${id}/timeline/`, { params });
   }
 }

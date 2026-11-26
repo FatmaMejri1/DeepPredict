@@ -45,6 +45,24 @@ import { AuthService } from '../../core/services/auth.service';
           <span class="nav-label" *ngIf="!collapsed">Drives Inventory</span>
         </a>
 
+        <a routerLink="/high-risk-drives" routerLinkActive="active" class="nav-item" title="High-Risk Drives">
+          <span class="nav-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 3 2.8 20h18.4L12 3Z"/><path d="M12 9v4m0 3h.01"/>
+            </svg>
+          </span>
+          <span class="nav-label" *ngIf="!collapsed">High-Risk Drives</span>
+        </a>
+
+        <a routerLink="/alerts" routerLinkActive="active" class="nav-item" title="Alerts">
+          <span class="nav-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/>
+            </svg>
+          </span>
+          <span class="nav-label" *ngIf="!collapsed">Alerts</span>
+        </a>
+
         <div class="nav-section-title" *ngIf="!collapsed">AI & TELEMETRY</div>
         <a *ngIf="isITProOrSysAdmin()" routerLink="/upload" routerLinkActive="active" class="nav-item" title="Upload Telemetry">
           <span class="nav-icon">
@@ -95,16 +113,15 @@ import { AuthService } from '../../core/services/auth.service';
           <span class="nav-label" *ngIf="!collapsed">Users & Roles</span>
         </a>
 
-        <div class="nav-section-title" *ngIf="!collapsed">DOCS & SYSTEM</div>
-        <a href="/api/docs/" target="_blank" rel="noopener noreferrer" class="nav-item" title="Swagger API Documentation">
-          <span class="nav-icon">
+        <a *ngIf="isSysAdmin()" routerLink="/audit-logs" routerLinkActive="active" class="nav-item" title="Audit Logs">
+          <span class="nav-icon" aria-hidden="true">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
-              <path d="M6 6h10M6 10h10M6 14h6"/>
+              <path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/>
             </svg>
           </span>
-          <span class="nav-label" *ngIf="!collapsed">API Documentation ↗</span>
+          <span class="nav-label" *ngIf="!collapsed">Audit Logs</span>
         </a>
+
       </nav>
 
       <div class="sidebar-footer">

@@ -1,7 +1,9 @@
 """Read-only queries behind the dashboard pages (views stay thin)."""
-from django.db.models import Count, F, Max, OuterRef, Subquery
+from django.db.models import Count, Exists, F, Max, OuterRef, Subquery
+from django.db.models import Q
 
 from infrastructure.models import Resource, ResourceType
+from infrastructure.operational import operational_metrics, operational_resources
 from ml_models.models import MLModelVersion, ModelType
 from monitoring.models import Metric
 from predictions.models import Prediction
@@ -13,6 +15,50 @@ SMART_SERIES = [
     ("smart_197_raw", "Pending sectors (197)"),
 ]
 
+DRIVE_STATUS_FILTERS = {"HEALTHY", "WARNING", "HIGH_RISK"}
+DRIVE_RISK_FILTERS = {"LOW", "MEDIUM", "HIGH", "CRITICAL", "NOT_SCORED"}
+
+
+def parse_drive_filters(params):
+    """Normalize only supported drive filters, matching the drive-list API."""
+    filters = {}
+    status_filter = params.get("status", "").strip().upper()
+    if status_filter in DRIVE_STATUS_FILTERS:
+        filters["status"] = status_filter
+
+    risk_level = params.get("risk_level", "").strip().upper()
+    if risk_level in DRIVE_RISK_FILTERS:
+        filters["risk_level"] = risk_level
+
+    anomaly_filter = params.get("is_anomalous", "").strip().lower()
+    if anomaly_filter in ("true", "1"):
+        filters["is_anomalous"] = True
+    elif anomaly_filter in ("false", "0"):
+        filters["is_anomalous"] = False
+
+    return filters
+
+
+def filter_drive_queryset(queryset, filters):
+    """Apply the drive-list filter semantics to an annotated drive queryset."""
+    if "status" in filters:
+        queryset = queryset.filter(status=filters["status"])
+
+    if "risk_level" in filters:
+        risk_level = filters["risk_level"]
+        if risk_level == "NOT_SCORED":
+            queryset = queryset.filter(risk_level__isnull=True)
+        else:
+            queryset = queryset.filter(risk_level=risk_level)
+
+    if "is_anomalous" in filters:
+        if filters["is_anomalous"]:
+            queryset = queryset.filter(is_anomalous=True)
+        else:
+            queryset = queryset.filter(Q(is_anomalous=False) | Q(is_anomalous__isnull=True))
+
+    return queryset
+
 
 def disks_with_latest():
     """Active disks, each annotated with its latest risk level/score and anomaly flag."""
@@ -22,20 +68,33 @@ def disks_with_latest():
     anomaly = Prediction.objects.filter(
         resource=OuterRef("pk"), model_version__model_type=ModelType.ANOMALY_DETECTION
     ).order_by("-window_end")
-    last_reading = Metric.objects.filter(resource=OuterRef("pk")).order_by("-timestamp")
-    return Resource.objects.filter(resource_type=ResourceType.DISK, is_active=True).annotate(
+    anomaly_exists = Prediction.objects.filter(
+        resource=OuterRef("pk"), model_version__model_type=ModelType.ANOMALY_DETECTION
+    )
+    last_reading = operational_metrics(
+        Metric.objects.filter(resource=OuterRef("pk"))
+    ).order_by("-timestamp")
+    resources = operational_resources(
+        Resource.objects.filter(resource_type=ResourceType.DISK, is_active=True)
+    )
+    return resources.annotate(
         risk_level=Subquery(risk.values("risk_level")[:1]),
         risk_score=Subquery(risk.values("score")[:1]),
         scored_until=Subquery(risk.values("window_end")[:1]),
         is_anomalous=Subquery(anomaly.values("is_anomalous")[:1]),
+        anomaly_evaluated=Exists(anomaly_exists),
         last_reading=Subquery(last_reading.values("timestamp")[:1]),
     )
 
 
-def summary_data():
-    disks = Resource.objects.filter(resource_type=ResourceType.DISK, is_active=True)
+def summary_data(filters=None):
+    filters = filters or {}
+    annotated = filter_drive_queryset(disks_with_latest(), filters)
+    disks = annotated
     by_status = {row["status"]: row["n"] for row in disks.values("status").annotate(n=Count("id"))}
-    annotated = disks_with_latest()
+    data_until = operational_metrics(
+        Metric.objects.filter(resource__in=disks.values("pk"))
+    ).aggregate(m=Max("timestamp"))["m"]
     return {
         "total": sum(by_status.values()),
         "healthy": by_status.get("HEALTHY", 0),
@@ -44,7 +103,7 @@ def summary_data():
         "anomalous": annotated.filter(is_anomalous=True).count(),
         "not_scored": annotated.filter(risk_level__isnull=True).count(),
         "top": annotated.filter(risk_score__isnull=False).order_by(F("risk_score").desc())[:10],
-        "data_until": Metric.objects.aggregate(m=Max("timestamp"))["m"],
+        "data_until": data_until,
     }
 
 
@@ -56,7 +115,9 @@ def active_risk_thresholds():
 
 def chart_data(resource, days=90):
     """Everything the two charts of the detail page need, as plain lists."""
-    rows = list(Metric.objects.filter(resource=resource).order_by("-timestamp")[:days])[::-1]
+    rows = list(operational_metrics(
+        Metric.objects.filter(resource=resource)
+    ).order_by("-timestamp")[:days])[::-1]
     smart = {
         "labels": [m.timestamp.strftime("%Y-%m-%d") for m in rows],
         "series": [{"label": label, "values": [m.values.get(key) for m in rows]}

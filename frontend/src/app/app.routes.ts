@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, sysadminGuard } from './core/guards/auth.guard';
+import { authGuard, itProOrSysadminGuard, sysadminGuard } from './core/guards/auth.guard';
 import { LoginComponent } from './features/auth/login/login.component';
 import { ShellComponent } from './layout/shell/shell.component';
 import { OverviewComponent } from './features/overview/overview.component';
@@ -11,6 +11,9 @@ import { PredictionsComponent } from './features/predictions/predictions.compone
 import { MlModelsComponent } from './features/ml-models/ml-models.component';
 import { UsersComponent } from './features/users/users.component';
 import { ProfileComponent } from './features/profile/profile.component';
+import { AlertsListComponent } from './features/alerts/alerts-list/alerts-list.component';
+import { AlertDetailComponent } from './features/alerts/alert-detail/alert-detail.component';
+import { AuditLogsComponent } from './features/audit-logs/audit-logs.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -22,12 +25,16 @@ export const routes: Routes = [
       { path: '', redirectTo: 'overview', pathMatch: 'full' },
       { path: 'overview', component: OverviewComponent },
       { path: 'drives', component: DriveListComponent },
+      { path: 'high-risk-drives', component: DriveListComponent, data: { highRiskOnly: true } },
       { path: 'drives/:id', component: DriveDetailComponent },
-      { path: 'upload', component: UploadComponent },
+      { path: 'alerts', component: AlertsListComponent },
+      { path: 'alerts/:id', component: AlertDetailComponent },
+      { path: 'upload', component: UploadComponent, canActivate: [itProOrSysadminGuard] },
       { path: 'validation', component: ValidationComponent },
-      { path: 'predictions', component: PredictionsComponent },
+      { path: 'predictions', component: PredictionsComponent, canActivate: [itProOrSysadminGuard] },
       { path: 'models', component: MlModelsComponent },
       { path: 'users', component: UsersComponent, canActivate: [sysadminGuard] },
+      { path: 'audit-logs', component: AuditLogsComponent, canActivate: [sysadminGuard] },
       { path: 'profile', component: ProfileComponent },
     ],
   },

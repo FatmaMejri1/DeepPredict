@@ -14,6 +14,10 @@ class NotEnoughHistory(InferenceError):
     pass
 
 
+class DriveModelCompatibilityError(InferenceError):
+    """The AI validator could not verify the uploaded drive model."""
+
+
 INFERENCE_SERVICE_URL = os.getenv(
     "INFERENCE_SERVICE_URL",
     "http://127.0.0.1:8001",
@@ -72,8 +76,15 @@ def predict(readings: list[dict]) -> dict:
             except Exception:
                 detail = body
 
-            if "not enough valid history" in str(detail).lower():
+            detail_text = json.dumps(detail) if not isinstance(detail, str) else detail
+            normalized_detail = detail_text.lower()
+            if "not enough valid history" in normalized_detail:
                 raise NotEnoughHistory(detail)
+
+            if "compatibility could not be verified" in normalized_detail:
+                raise DriveModelCompatibilityError(
+                    "Drive model compatibility could not be verified."
+                )
 
             raise InferenceError(
                 f"Inference validation error: {detail}"

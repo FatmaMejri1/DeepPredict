@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Count, Max
 
 from infrastructure.models import Resource, ResourceType
+from infrastructure.operational import operational_metrics, operational_resources
 from monitoring.models import Metric
 
 from predictions.services import InferenceError, NotEnoughHistory, predict_resource
@@ -36,9 +37,14 @@ class Command(BaseCommand):
         dates = [as_of]                       # [None] means: the latest readings
         if options["since"]:
             start = parse_date(options["since"], "--since")
-            latest = Metric.objects.aggregate(m=Max("timestamp"))["m"]
+            operational_drive_ids = operational_resources(
+                Resource.objects.filter(resource_type=ResourceType.DISK, is_active=True)
+            ).values("pk")
+            latest = operational_metrics(
+                Metric.objects.filter(resource_id__in=operational_drive_ids)
+            ).aggregate(m=Max("timestamp"))["m"]
             if latest is None:
-                raise CommandError("No readings in the database. Run load_demo_drives first.")
+                raise CommandError("No operational readings are available. Upload SMART telemetry first.")
             end = as_of or latest.date()
             step = max(options["every"], 1)
             dates, day = [], start
@@ -47,7 +53,9 @@ class Command(BaseCommand):
                 day += timedelta(days=step)
             dates.append(end)                 # always finish on the last day
 
-        resources = Resource.objects.filter(resource_type=ResourceType.DISK, is_active=True).order_by("identifier")
+        resources = operational_resources(
+            Resource.objects.filter(resource_type=ResourceType.DISK, is_active=True)
+        ).order_by("identifier")
         if options["resource"]:
             resources = resources.filter(identifier=options["resource"])
         if options["limit"]:
@@ -58,7 +66,9 @@ class Command(BaseCommand):
         for day in dates:                     # oldest first, so the final status is the latest
             for resource in resources:
                 try:
-                    result = predict_resource(resource, as_of=day)
+                    result = predict_resource(
+                        resource, as_of=day, actor="system", source="run_predictions"
+                    )
                 except NotEnoughHistory:
                     too_early += 1
                     continue
@@ -76,5 +86,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(
             f"Scored on {len(dates)} date(s) | predicted: {done} | already up to date: {skipped} | "
             f"not enough history: {too_early} | errors: {errors}"))
-        counts = Resource.objects.filter(resource_type=ResourceType.DISK).values("status").annotate(n=Count("id"))
+        counts = operational_resources(
+            Resource.objects.filter(resource_type=ResourceType.DISK)
+        ).values("status").annotate(n=Count("id"))
         self.stdout.write("Status of the drives: " + ", ".join(f"{c['status']}={c['n']}" for c in counts))

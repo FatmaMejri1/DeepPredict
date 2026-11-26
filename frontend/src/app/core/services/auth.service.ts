@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, catchError, throwError, of } from 'rxjs';
+import { Observable, tap, catchError, throwError, of, finalize, shareReplay } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ChangePasswordRequest, LoginResponse, Role, User } from '../models/auth.models';
 
@@ -16,6 +16,7 @@ export class AuthService {
   private router = inject(Router);
 
   private currentUserSignal = signal<User | null>(null);
+  private profileRequest: Observable<User | null> | null = null;
   readonly currentUser = this.currentUserSignal.asReadonly();
   readonly isLoggedIn = computed(() => !!this.currentUserSignal());
   readonly userRole = computed(() => this.currentUserSignal()?.role ?? null);
@@ -23,17 +24,22 @@ export class AuthService {
   readonly isITProOrSysAdmin = computed(() => this.userRole() === 'SYSADMIN' || this.userRole() === 'IT_PRO');
   readonly isOperator = computed(() => this.userRole() === 'OPERATOR');
 
-  constructor() {
-    this.initUser();
-  }
+  ensureProfileLoaded(): Observable<User | null> {
+    const user = this.currentUserSignal();
+    if (user) return of(user);
+    if (!this.getAccessToken()) return of(null);
 
-  private initUser(): void {
-    const token = this.getAccessToken();
-    if (token) {
-      this.fetchMe().subscribe({
-        error: () => this.logout(),
-      });
+    if (!this.profileRequest) {
+      this.profileRequest = this.fetchMe().pipe(
+        catchError(() => {
+          this.logout();
+          return of(null);
+        }),
+        finalize(() => { this.profileRequest = null; }),
+        shareReplay({ bufferSize: 1, refCount: false }),
+      );
     }
+    return this.profileRequest;
   }
 
   getAccessToken(): string | null {
@@ -88,7 +94,21 @@ export class AuthService {
   }
 
   logout(): void {
-    this.clearTokens();
-    this.router.navigate(['/login']);
+    const refresh = this.getRefreshToken();
+    if (!refresh) {
+      this.clearTokens();
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    // Keep the access token available until the interceptor sends this request.
+    // Local logout always completes, even if the server cannot revoke the token.
+    this.http.post<void>(`${environment.apiUrl}/auth/logout/`, { refresh }).pipe(
+      catchError(() => of(undefined)),
+      finalize(() => {
+        this.clearTokens();
+        this.router.navigate(['/login']);
+      }),
+    ).subscribe();
   }
 }

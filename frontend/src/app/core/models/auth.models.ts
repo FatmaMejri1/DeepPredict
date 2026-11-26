@@ -1,7 +1,7 @@
 export type Role = 'SYSADMIN' | 'IT_PRO' | 'OPERATOR';
 
 export interface User {
-  id: number;
+  id: string;
   username: string;
   email: string;
   role: Role;

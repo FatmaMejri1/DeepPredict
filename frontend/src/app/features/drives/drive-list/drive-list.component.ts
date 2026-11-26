@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -14,8 +14,12 @@ import { AuthService } from '../../../core/services/auth.service';
     <div class="drives-page">
       <div class="page-header">
         <div>
-          <h1 class="page-title">Drive Fleet Inventory</h1>
-          <p class="page-subtitle">Monitored disk storage units and individual predictive telemetry states.</p>
+          <h1 class="page-title">{{ highRiskOnly ? 'High-Risk Drives' : 'Drive Fleet Inventory' }}</h1>
+          <p class="page-subtitle">
+            {{ highRiskOnly
+              ? 'Drives currently classified as high risk.'
+              : 'Monitored disk storage units and individual predictive telemetry states.' }}
+          </p>
         </div>
       </div>
 
@@ -35,7 +39,7 @@ import { AuthService } from '../../../core/services/auth.service';
         </div>
 
         <div class="filters-group">
-          <select [(ngModel)]="statusFilter" (change)="loadDrives(1)" class="form-select filter-select">
+          <select *ngIf="!highRiskOnly" [(ngModel)]="statusFilter" (change)="loadDrives(1)" class="form-select filter-select">
             <option value="">All Statuses</option>
             <option value="HEALTHY">Healthy</option>
             <option value="WARNING">Warning</option>
@@ -88,6 +92,12 @@ import { AuthService } from '../../../core/services/auth.service';
               <tr *ngIf="loading">
                 <td colspan="10" class="text-center py-4">Loading drive inventory...</td>
               </tr>
+              <tr *ngIf="!loading && loadError">
+                <td colspan="10" class="text-center py-4" role="alert">
+                  {{ loadError }}
+                  <button type="button" class="btn btn-secondary btn-sm" (click)="loadDrives(currentPage)">Try again</button>
+                </td>
+              </tr>
               <tr *ngFor="let drive of drives">
                 <td>
                   <a [routerLink]="['/drives', drive.id]" class="drive-link font-mono">
@@ -123,11 +133,14 @@ import { AuthService } from '../../../core/services/auth.service';
                   <span class="text-muted" *ngIf="drive.risk_score === null">—</span>
                 </td>
                 <td>
-                  <span *ngIf="drive.is_anomalous" class="badge badge-anomaly">
+                  <span *ngIf="drive.anomaly_evaluated && drive.is_anomalous" class="badge badge-anomaly">
                     ANOMALOUS
                   </span>
-                  <span *ngIf="!drive.is_anomalous" class="badge badge-neutral">
+                  <span *ngIf="drive.anomaly_evaluated && !drive.is_anomalous" class="badge badge-neutral">
                     NORMAL
+                  </span>
+                  <span *ngIf="!drive.anomaly_evaluated" class="badge badge-neutral">
+                    NOT EVALUATED
                   </span>
                 </td>
                 <td class="text-muted">
@@ -142,9 +155,9 @@ import { AuthService } from '../../../core/services/auth.service';
                   </a>
                 </td>
               </tr>
-              <tr *ngIf="!loading && drives.length === 0">
+              <tr *ngIf="!loading && !loadError && drives.length === 0">
                 <td colspan="10" class="text-center py-4 text-muted">
-                  No drives match the specified filters.
+                  {{ highRiskOnly ? 'No high-risk drives are currently available.' : 'No drives match the specified filters.' }}
                 </td>
               </tr>
             </tbody>
@@ -290,8 +303,11 @@ export class DriveListComponent implements OnInit {
   private driveService = inject(DriveService);
   private changeDetector = inject(ChangeDetectorRef);
 
+  @Input() highRiskOnly = false;
+
   drives: Drive[] = [];
   loading = false;
+  loadError = '';
   totalCount = 0;
   pageSize = 20;
   currentPage = 1;
@@ -305,6 +321,9 @@ export class DriveListComponent implements OnInit {
   private searchTimeout: any;
 
   ngOnInit(): void {
+    if (this.highRiskOnly) {
+      this.statusFilter = 'HIGH_RISK';
+    }
     this.loadDrives(1);
   }
 
@@ -318,10 +337,11 @@ export class DriveListComponent implements OnInit {
   loadDrives(page: number): void {
     this.currentPage = page;
     this.loading = true;
+    this.loadError = '';
 
     const params: DriveQueryParams = {
       search: this.search,
-      status: this.statusFilter,
+      status: this.highRiskOnly ? 'HIGH_RISK' : this.statusFilter,
       risk_level: this.riskFilter,
       is_anomalous: this.anomalyFilter,
       ordering: this.ordering,
@@ -338,6 +358,8 @@ export class DriveListComponent implements OnInit {
       },
       error: () => {
         this.loading = false;
+        this.drives = [];
+        this.loadError = 'Drive inventory could not be loaded.';
         this.changeDetector.markForCheck();
       },
     });

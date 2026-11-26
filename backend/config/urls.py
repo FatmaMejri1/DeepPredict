@@ -17,6 +17,8 @@ urlpatterns = [
     path("robots.txt", robots_txt, name="robots_txt"),
     path("admin/", admin.site.urls),
     path("api/", include("accounts.urls")),
+    path("api/", include("audit.urls")),
+    path("api/", include("alerts.urls")),
     path("api/", include("dashboard.api_urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerSplitView.as_view(url_name="schema"), name="docs"),

@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { MLModelCard } from '../../core/models/model.models';
 import { ModelService } from '../../core/services/model.service';
 import { MlModelsComponent } from './ml-models.component';
@@ -66,5 +66,37 @@ describe('MlModelsComponent', () => {
     expect(text).toContain('14.0%');
     expect(text).toContain('2.00%');
     expect(text).toContain('NOT an absolute Bayesian probability of failure');
+    expect(text).toContain('GRU failure-risk evaluation data');
+    expect(text).toContain('LSTM Autoencoder anomaly evaluation data');
+    expect(text).toContain('healthy_drives_flagged');
+    expect(text).toContain('failed_drives_detected');
+  });
+
+  it('shows an empty state when no model versions are registered', async () => {
+    await TestBed.configureTestingModule({
+      imports: [MlModelsComponent],
+      providers: [{ provide: ModelService, useValue: { getModels: () => of([]) } }],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(MlModelsComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('No registered model versions are available.');
+  });
+
+  it('shows a recoverable error when model records cannot be loaded', async () => {
+    await TestBed.configureTestingModule({
+      imports: [MlModelsComponent],
+      providers: [{ provide: ModelService, useValue: { getModels: () => throwError(() => new Error('offline')) } }],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(MlModelsComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('[role="alert"]')?.textContent)
+      .toContain('Model information could not be loaded.');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Try again');
   });
 });

@@ -32,8 +32,17 @@ import { MLModelCard } from '../../core/models/model.models';
         </div>
       </div>
 
+      <div *ngIf="loading" class="dashboard-state loading-state" role="status">Loading model records…</div>
+      <div *ngIf="error" class="dashboard-state error-state" role="alert">
+        <span>{{ error }}</span>
+        <button type="button" class="btn btn-secondary btn-sm" (click)="loadModels()">Try again</button>
+      </div>
+      <div *ngIf="!loading && !error && models.length === 0" class="dashboard-state empty-state">
+        No registered model versions are available.
+      </div>
+
       <!-- Models List -->
-      <div class="models-list" *ngIf="models.length > 0">
+      <div class="models-list" *ngIf="!loading && !error && models.length > 0">
         <div class="card model-card" *ngFor="let model of models">
           <div class="card-header">
             <div class="model-title-row">
@@ -119,6 +128,12 @@ import { MLModelCard } from '../../core/models/model.models';
               </table>
             </div>
           </div>
+
+          <section class="evaluation-data" aria-label="Recorded model evaluation metrics">
+            <h4>{{ model.model_type === 'FAILURE_PREDICTION' ? 'GRU failure-risk evaluation data' : 'LSTM Autoencoder anomaly evaluation data' }}</h4>
+            <pre *ngIf="hasEvaluationMetrics(model)">{{ model.evaluation_metrics | json }}</pre>
+            <p *ngIf="!hasEvaluationMetrics(model)" class="text-muted">No evaluation metrics recorded for this model version.</p>
+          </section>
         </div>
       </div>
     </div>
@@ -272,6 +287,27 @@ import { MLModelCard } from '../../core/models/model.models';
       }
     }
 
+    .evaluation-data {
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-color);
+
+      h4 { margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-main); }
+      pre {
+        margin: 0;
+        padding: 0.75rem;
+        max-height: 16rem;
+        overflow: auto;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        background: #f8fafc;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        color: var(--text-main);
+        font-size: 0.75rem;
+      }
+    }
+
     .font-mono {
       font-family: ui-monospace, SFMono-Regular, monospace;
     }
@@ -283,12 +319,30 @@ export class MlModelsComponent implements OnInit {
   private modelService = inject(ModelService);
 
   models: MLModelCard[] = [];
+  loading = true;
+  error = '';
 
   ngOnInit(): void {
+    this.loadModels();
+  }
+
+  loadModels(): void {
+    this.loading = true;
+    this.error = '';
     this.modelService.getModels().subscribe({
       next: (data) => {
         this.models = data;
+        this.loading = false;
+      },
+      error: () => {
+        this.models = [];
+        this.loading = false;
+        this.error = 'Model information could not be loaded.';
       },
     });
+  }
+
+  hasEvaluationMetrics(model: MLModelCard): boolean {
+    return !!model.evaluation_metrics && Object.keys(model.evaluation_metrics).length > 0;
   }
 }

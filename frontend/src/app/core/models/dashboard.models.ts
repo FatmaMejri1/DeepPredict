@@ -12,6 +12,7 @@ export interface DriveSummaryItem {
   risk_score: number | null;
   scored_until: string | null;
   is_anomalous: boolean;
+  anomaly_evaluated: boolean;
   last_reading: string | null;
 }
 
@@ -24,6 +25,12 @@ export interface DashboardSummary {
   not_scored: number;
   data_until: string | null;
   top_critical: DriveSummaryItem[];
+}
+
+export interface DashboardFilters {
+  status?: string;
+  risk_level?: string;
+  is_anomalous?: string;
 }
 
 export interface DashboardActivityItem {

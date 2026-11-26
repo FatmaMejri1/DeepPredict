@@ -1,6 +1,8 @@
 import secrets
+from unittest.mock import patch
 
 from django.core.cache import cache
+from django.db import IntegrityError
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -111,6 +113,17 @@ class AccountsTests(APITestCase):
         self.assertNotEqual(user.password, ALT_TEST_CREDENTIAL)  # stored hashed
         self.assertTrue(user.check_password(ALT_TEST_CREDENTIAL))
 
+    @patch("audit.services.AuditLog.objects.create", side_effect=IntegrityError("audit unavailable"))
+    def test_user_creation_rolls_back_when_audit_write_fails(self, _create):
+        self.client.force_authenticate(self.admin)
+        payload = {
+            "username": "rollback-user", "email": "rollback@example.com",
+            "password": ALT_TEST_CREDENTIAL, "role": "IT_PRO",
+        }
+        with self.assertRaises(IntegrityError):
+            self.client.post("/api/users/", payload, format="json")
+        self.assertFalse(User.objects.filter(username="rollback-user").exists())
+
     def test_weak_password_rejected(self):
         self.client.force_authenticate(self.admin)
         payload = {"username": "weak", "email": "weak@example.com", "password": WEAK_CREDENTIAL}
@@ -139,6 +152,35 @@ class AccountsTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.pro.refresh_from_db()
         self.assertFalse(self.pro.is_active)
+
+    @patch("audit.services.AuditLog.objects.create", side_effect=IntegrityError("audit unavailable"))
+    def test_user_update_rolls_back_when_audit_write_fails(self, _create):
+        original_role = self.pro.role
+        self.client.force_authenticate(self.admin)
+        with self.assertRaises(IntegrityError):
+            self.client.patch(
+                f"/api/users/{self.pro.id}/", {"role": "SYSADMIN"}, format="json"
+            )
+        self.pro.refresh_from_db()
+        self.assertEqual(self.pro.role, original_role)
+
+    @patch("audit.services.AuditLog.objects.create", side_effect=IntegrityError("audit unavailable"))
+    def test_user_deactivation_rolls_back_when_audit_write_fails(self, _create):
+        self.client.force_authenticate(self.admin)
+        with self.assertRaises(IntegrityError):
+            self.client.post(f"/api/users/{self.pro.id}/deactivate/")
+        self.pro.refresh_from_db()
+        self.assertTrue(self.pro.is_active)
+
+    @patch("audit.services.AuditLog.objects.create", side_effect=IntegrityError("audit unavailable"))
+    def test_admin_password_change_rolls_back_when_audit_write_fails(self, _create):
+        self.client.force_authenticate(self.admin)
+        with self.assertRaises(IntegrityError):
+            self.client.post(
+                f"/api/users/{self.pro.id}/set-password/", {"password": NEW_TEST_CREDENTIAL}, format="json"
+            )
+        self.pro.refresh_from_db()
+        self.assertTrue(self.pro.check_password(TEST_CREDENTIAL))
 
     def test_sysadmin_changes_role_of_another_user(self):
         self.client.force_authenticate(self.admin)
@@ -172,6 +214,33 @@ class AccountsTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.client.force_authenticate(None)
         self.assertEqual(self.login("pro1", NEW_TEST_CREDENTIAL).status_code, status.HTTP_200_OK)
+
+    @patch("audit.services.AuditLog.objects.create", side_effect=IntegrityError("audit unavailable"))
+    def test_own_password_change_rolls_back_when_audit_write_fails(self, _create):
+        self.client.force_authenticate(self.pro)
+        with self.assertRaises(IntegrityError):
+            self.client.post(
+                "/api/auth/change-password/",
+                {"old_password": TEST_CREDENTIAL, "new_password": NEW_TEST_CREDENTIAL},
+                format="json",
+            )
+        self.pro.refresh_from_db()
+        self.assertTrue(self.pro.check_password(TEST_CREDENTIAL))
+
+    def test_own_password_audit_contains_no_credential(self):
+        from audit.models import ActionType, AuditLog
+
+        self.client.force_authenticate(self.pro)
+        response = self.client.post(
+            "/api/auth/change-password/",
+            {"old_password": TEST_CREDENTIAL, "new_password": NEW_TEST_CREDENTIAL},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        event = AuditLog.objects.get(action=ActionType.UPDATE, resource_id=str(self.pro.pk))
+        self.assertEqual(event.details, {"action": "change_own_password"})
+        self.assertNotIn(TEST_CREDENTIAL, str(event.details))
+        self.assertNotIn(NEW_TEST_CREDENTIAL, str(event.details))
 
     def test_change_password_wrong_old_password(self):
         self.client.force_authenticate(self.pro)

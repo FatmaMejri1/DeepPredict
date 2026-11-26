@@ -1,7 +1,12 @@
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
+from rest_framework_simplejwt.settings import api_settings
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.utils import get_md5_hash_password
 
 from .models import User
 
@@ -135,3 +140,48 @@ class LoginSerializer(TokenObtainPairSerializer):
         user_logged_in.send(sender=self.user.__class__, request=request, user=self.user)
 
         return data
+
+
+class AccountTokenRefreshSerializer(TokenRefreshSerializer):
+    """Refresh only active-user tokens whose password has not since changed."""
+
+    def validate(self, attrs):
+        # TokenRefreshSerializer checks expiry/blacklisting and account activity,
+        # but SimpleJWT 5.5.1 does not check its password-revocation claim here.
+        token = self.token_class(attrs["refresh"])
+        user_id = token.payload.get(api_settings.USER_ID_CLAIM)
+        user = User.objects.filter(**{api_settings.USER_ID_FIELD: user_id}).first()
+        if user is None or not api_settings.USER_AUTHENTICATION_RULE(user):
+            raise AuthenticationFailed("No active account found for this refresh token.")
+
+        if api_settings.CHECK_REVOKE_TOKEN:
+            claim = token.get(api_settings.REVOKE_TOKEN_CLAIM)
+            if claim != get_md5_hash_password(user.password):
+                raise AuthenticationFailed("Refresh token was revoked after a password change.")
+
+        return super().validate(attrs)
+
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField(write_only=True, trim_whitespace=True)
+
+    def validate(self, attrs):
+        try:
+            token = RefreshToken(attrs["refresh"])
+        except TokenError as exc:
+            raise serializers.ValidationError({
+                "refresh": "Refresh token is invalid, expired, or already revoked."
+            }) from exc
+
+        request_user = self.context["request"].user
+        token_user_id = token.payload.get(api_settings.USER_ID_CLAIM)
+        if str(token_user_id) != str(request_user.pk):
+            raise serializers.ValidationError({"refresh": "Refresh token does not belong to this user."})
+
+        if api_settings.CHECK_REVOKE_TOKEN:
+            claim = token.get(api_settings.REVOKE_TOKEN_CLAIM)
+            if claim != get_md5_hash_password(request_user.password):
+                raise serializers.ValidationError({"refresh": "Refresh token has been revoked."})
+
+        attrs["token"] = token
+        return attrs

@@ -1,27 +1,35 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
+import { map } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+import { Role } from '../models/auth.models';
 
 export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  if (authService.getAccessToken()) {
-    return true;
+  if (!authService.getAccessToken()) {
+    return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
   }
 
-  router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
-  return false;
+  return authService.ensureProfileLoaded().pipe(
+    map((user) => user ? true : router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } })),
+  );
 };
 
-export const sysadminGuard: CanActivateFn = () => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
+function roleGuard(allowedRoles: Role[]): CanActivateFn {
+  return () => {
+    const authService = inject(AuthService);
+    const router = inject(Router);
 
-  if (authService.isSysAdmin()) {
-    return true;
-  }
+    return authService.ensureProfileLoaded().pipe(
+      map((user) => {
+        if (user && allowedRoles.includes(user.role)) return true;
+        return router.createUrlTree(['/overview']);
+      }),
+    );
+  };
+}
 
-  router.navigate(['/overview']);
-  return false;
-};
+export const sysadminGuard: CanActivateFn = roleGuard(['SYSADMIN']);
+export const itProOrSysadminGuard: CanActivateFn = roleGuard(['IT_PRO', 'SYSADMIN']);

@@ -1,6 +1,8 @@
 import secrets
+from unittest.mock import patch
 
 from django.core.exceptions import PermissionDenied
+from django.db import IntegrityError
 from django.test import RequestFactory, TestCase
 from django.contrib.auth import get_user_model
 
@@ -46,6 +48,11 @@ class AuditLogTests(TestCase):
         self.assertEqual(log.resource_id, "DISK-001")
         self.assertEqual(log.ip_address, "192.168.1.100")
         self.assertEqual(log.details["name"], "Primary Disk")
+
+    @patch("audit.services.AuditLog.objects.create", side_effect=IntegrityError("audit unavailable"))
+    def test_required_audit_write_propagates_failure(self, _create):
+        with self.assertRaises(IntegrityError):
+            log_action(action=ActionType.CREATE, resource_type="Resource", resource_id="DISK-1")
 
     def test_audit_log_is_immutable_cannot_update(self):
         log = log_action(
@@ -96,3 +103,13 @@ class AuditLogTests(TestCase):
         latest_log = AuditLog.objects.first()
         self.assertEqual(latest_log.action, ActionType.LOGIN_FAILED)
         self.assertEqual(latest_log.details.get("attempted_username"), "admin_audit")
+
+    @patch("audit.services.AuditLog.objects.create", side_effect=IntegrityError("audit unavailable"))
+    def test_authentication_audit_failure_is_best_effort(self, _create):
+        with self.assertLogs("audit", level="ERROR"):
+            response = self.client.post(
+                "/api/auth/login/",
+                {"username": "admin_audit", "password": ADMIN_CREDENTIAL},
+                format="json",
+            )
+        self.assertEqual(response.status_code, 200)
